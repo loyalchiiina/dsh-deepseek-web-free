@@ -1,7 +1,7 @@
 {
   "name": "dsh-deepseek-web-free",
   "description": "Unofficial DeepSeek Web LLM provider plugin for DeepSeek Harness. Lives in packages/plugin of the public workspace; npm tarball ships built lib/ and prebuilt WASM.",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "keywords": [
     "dsh",
     "dsh-plugin",

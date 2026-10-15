@@ -2,6 +2,47 @@
 
 本 fork（npm 包名 `dsh-deepseek-web-free`）相对上游 [`y-wi/dsh-deepseek-web@1.0.3`](https://github.com/y-wi/dsh-deepseek-web) 的改动记录。
 
+## 1.0.8
+
+- **侧边栏会话浮层背景改为不透明**。`.dsw-web-menu` 原本沿用宿主的
+  `background:var(--dsw-specific-menu)`，而该 token 在浅色主题是 `#f8f9fa94`（alpha 58%）、
+  深色主题是 `#43454a73`（alpha 45%）。宿主自己的弹层是**两件套**：
+  半透明底色 **加** `backdrop-filter: blur(...)` 磨砂；本插件是自己往 `document.body`
+  里挂的普通 div，装不了 `backdrop-filter`（祖先链上没有可模糊的合成层），
+  只抄了一半 → 底色半透明、背后内容直接透出来。
+  现改用 `background:var(--dsw-alias-bg-layer-3)`（浅色 `#fff` / 深色 `#353638`，
+  两个主题取值**都完全不透明**），这是 DSH 给"抬升面板"用的不透明表面色，
+  视觉上与"菜单色叠在层三底色上"的结果只差 4/255（浅）与 8/255（深）。
+
+- 教训（通用）：**抄宿主弹层的配色时，先确认宿主是不是"半透明底 + backdrop-filter"两件套。**
+  只抄 `background` 不会得到同样的观感；要么把 backdrop-filter 一并抄来，
+  要么换成不透明的等价 token。判定"某 token 是否透明"不能只看名字，
+  必须把 var 链解析到最终字面色值（看 `#rrggbbaa` 的 aa）。
+
+## 1.0.7
+
+- 🔴 **修改名遗留的路径切片 bug**（1.0.6 改名时漏改，导致侧边栏会话列表整块不可用）。
+  `lib/index.js` 的 `registerSessionRoutes` 里用**硬编码长度**切掉路由前缀：
+  `const rest = url.pathname.slice(34);` —— `34` 恰好是旧前缀
+  `/plugins/dsh-deepseek-web/sessions` 的字符数。改名后新前缀
+  `/plugins/dsh-deepseek-web-free/sessions` 长 39，切片从第 34 位开始会切出 `"sions"`，
+  于是 `rest` 既不等于 `""` 也匹配不上 `/history` / `/materialize` 正则，
+  **所有 sessions 请求都被插件自己的兜底分支回成 404**
+  （`{"error":"not found","code":"DEEPSEEK_WEB_PROTOCOL"}`）。
+  而 `/auth/status`、`/account`、`/doctor` 是 `kind:"exact"` 路由、不经过切片，
+  所以「登录能成功、会话列表却是空/报错」。
+  现在改为 `url.pathname.slice(SESSIONS_PATH.length)`，前缀长度由常量自身决定，
+  以后改名/改前缀不会再漏。
+
+- 说明（**有意保留，勿改**）：`lib/config-DACadRbL.js` 的 `profileDir()` / `cacheDir()`
+  仍用旧名拼路径 —— `<DSH_HOME>/browser-profiles/dsh-deepseek-web` 与
+  `<DSH_HOME>/cache/dsh-deepseek-web/browser`。这是**故意不改**的：磁盘上该目录已存在，
+  里面是免退出登录用的浏览器 profile；改名等于把用户登录态丢掉。数据目录名与包名解耦，
+  两者不一致是预期状态。
+- 教训：改名类改动**不能只搜字符串字面量**。凡是用长度/偏移量解析路径的地方
+  （`slice(n)` / `substring(n)` / `substr(n)` / `pathname.length - k`）都要一并核查；
+  本文档上一版（1.0.6）已声明"全部路由前缀已改"，但长度常量没有被当成前缀的派生量。
+
 ## 1.0.6
 
 - **改名**：包名 `dsh-deepseek-web` → `dsh-deepseek-web-free`（上游包名被原作者占用，无法同名发布）。
