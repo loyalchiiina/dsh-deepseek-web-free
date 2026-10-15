@@ -1,32 +1,158 @@
 {
-  "name": "dsh-deepseek-web",
-  "private": true,
-  "description": "Public pnpm workspace for the dsh-deepseek-web Cordis plugin (the installable package is packages/plugin). Git does not ship packages/plugin/lib; npm pack and pnpm build produce it.",
-  "version": "1.0.3",
+  "name": "dsh-deepseek-web-free",
+  "description": "Unofficial DeepSeek Web LLM provider plugin for DeepSeek Harness. Lives in packages/plugin of the public workspace; npm tarball ships built lib/ and prebuilt WASM.",
+  "version": "1.0.6",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "cordis-plugin",
+    "llm-provider"
+  ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/y-wi/dsh-deepseek-web.git"
+    "url": "git+https://github.com/loyalchiiina/dsh-deepseek-web-free.git"
   },
-  "homepage": "https://github.com/y-wi/dsh-deepseek-web",
+  "homepage": "https://github.com/loyalchiiina/dsh-deepseek-web-free",
   "bugs": {
-    "url": "https://github.com/y-wi/dsh-deepseek-web/issues"
+    "url": "https://github.com/loyalchiiina/dsh-deepseek-web-free/issues"
   },
   "license": "MIT",
   "type": "module",
-  "packageManager": "pnpm@11.7.0",
   "engines": {
     "node": "^22.19.0 || >=24.0.0"
   },
-  "scripts": {
-    "typecheck": "pnpm -r typecheck",
-    "test": "vitest run",
-    "build": "pnpm -r build",
-    "check": "pnpm typecheck && pnpm test && pnpm build",
-    "pack:plugin": "pnpm --filter ./packages/plugin pack --pack-destination packages/plugin"
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "bin": {
+    "dsh-deepseek-web-free": "lib/bin.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./invariant": {
+      "types": "./lib/invariant.d.ts",
+      "default": "./lib/invariant.js"
+    },
+    "./tui": {
+      "types": "./lib/tui.d.ts",
+      "default": "./lib/tui.js"
+    },
+    "./client": "./lib/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "wasm",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "dsh": {
+    "plugin": true,
+    "kind": "server",
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-primitives",
+        "@deepseek-ai/dsh-client-ui-sidebar",
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ],
+      "platform": "web"
+    }
+  },
+  "disclosure": {
+    "cloud": true,
+    "network": [
+      "https://chat.deepseek.com"
+    ],
+    "offlineMode": false,
+    "apiKeys": [
+      {
+        "env": "DEEPSEEK_WEB_TOKEN",
+        "storage": "dsh-credentials"
+      }
+    ],
+    "permissions": {
+      "network": [
+        "chat.deepseek.com"
+      ],
+      "filesystem": [
+        "plugin-isolated-browser-profile"
+      ],
+      "env": [
+        "DEEPSEEK_WEB_TOKEN"
+      ]
+    },
+    "jurisdiction": [
+      "PIPL(CN)"
+    ],
+    "retention": "session"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": ">=4.0.1 <5.0.0-0 || >=4.0.5-alpha.1 <5.0.0-0",
+    "@deepseek-ai/dsh-commands": ">=0.1.7-rc.1 <0.2.0-0 || >=0.2.0-rc.1 <0.3.0-0",
+    "@deepseek-ai/dsh-credentials": ">=0.1.7-rc.1 <0.2.0-0 || >=0.2.0-rc.1 <0.3.0-0",
+    "@deepseek-ai/dsh-home-paths": ">=0.1.7-rc.1 <0.2.0-0 || >=0.2.0-rc.1 <0.3.0-0",
+    "@deepseek-ai/dsh-host-webserver": ">=0.1.7-rc.1 <0.2.0-0 || >=0.2.0-rc.1 <0.3.0-0",
+    "@deepseek-ai/dsh-llm": ">=0.1.7-rc.1 <0.2.0-0 || >=0.2.0-rc.1 <0.3.0-0",
+    "@deepseek-ai/dsh-settings": ">=0.1.7-rc.1 <0.2.0-0 || >=0.2.0-rc.1 <0.3.0-0",
+    "@deepseek-ai/schemastery": ">=3.18.1 <4.0.0-0 || >=3.18.5-alpha.1 <4.0.0-0",
+    "react": "^18.2.0"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/cordis": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-commands": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-credentials": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-home-paths": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-host-webserver": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-llm": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-settings": {
+      "optional": true
+    },
+    "@deepseek-ai/schemastery": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@puppeteer/browsers": "^2.10.5",
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "@types/node": "^22.20.0",
+    "@types/react": "~18.3.1",
+    "react": "^18.2.0",
+    "tsdown": "^0.22.2",
     "typescript": "^5.9.3",
     "vitest": "^4.1.8"
+  },
+  "scripts": {
+    "build": "pnpm run typecheck && tsdown && node ../../scripts/copy-wasm.mjs",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.client.json",
+    "test": "vitest run"
   }
 }
