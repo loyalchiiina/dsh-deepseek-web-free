@@ -1,0 +1,11 @@
+# Optional DeepSeek Web provider over the base composition. A saved
+# agent-default-model setting, when present, still wins over this bundle value.
+
+- id: agent-default-model
+  config:
+    provider: deepseek-web
+    model: default
+
+- insert:
+    - id: llm-deepseek-web-free
+      name: dsh-deepseek-web-free
