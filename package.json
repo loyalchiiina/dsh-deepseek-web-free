@@ -1,7 +1,7 @@
 {
   "name": "dsh-deepseek-web-free",
-  "description": "Unofficial DeepSeek Web LLM provider plugin for DeepSeek Harness. Lives in packages/plugin of the public workspace; npm tarball ships built lib/ and prebuilt WASM.",
-  "version": "1.0.8",
+  "description": "Unofficial DeepSeek Web LLM provider for DeepSeek Harness (fork of y-wi/dsh-deepseek-web) with fixes for DSH 0.2.x. 非官方 DeepSeek 网页端 Provider，dsh-deepseek-web 的 fork，适配 DSH 0.2.x。",
+  "version": "1.0.10",
   "keywords": [
     "dsh",
     "dsh-plugin",
@@ -50,7 +50,8 @@
     "cordis.patch.yml",
     "README.md",
     "LICENSE",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "docs/README.md"
   ],
   "dsh": {
     "plugin": true,

@@ -2,6 +2,52 @@
 
 本 fork（npm 包名 `dsh-deepseek-web-free`）相对上游 [`y-wi/dsh-deepseek-web@1.0.3`](https://github.com/y-wi/dsh-deepseek-web) 的改动记录。
 
+## 1.0.10 — 2026-10-19
+
+**修 1.0.9 里如实标注为「已知问题」的那个真 bug：TUI 永远不挂载。**
+
+| 项 | 内容 |
+| --- | --- |
+| 症状 | `exports["./tui"]` 与 `lib/tui.js` 都在，但 TUI profile 里 `deepSeekWeb` 服务不存在、`/deepseek-web` 命令不可用——永远不会被自动挂载 |
+| 根因 | `cordis.patch.yml` 的 `insert` 只有 1 条（`llm-deepseek-web-free`），缺少上游那条 TUI 条目。1.0.6 改包名时，上游的 `deepseek-web-tui` / `dsh-deepseek-web/tui` 两条 insert 只改出了一条 |
+| 修法 | 补回第二条：`- id: deepseek-web-free-tui` / `name: dsh-deepseek-web-free/tui` / `inject: [deepSeekWeb]` |
+| 取证 | 上游 `dsh-deepseek-web@1.0.3` 的 `package/cordis.patch.yml`（`npm pack` 解包实测）确有两条 insert；本 fork 修前只有一条。子路径挂载语法在官方包里亦有先例（`dsh-ops` 的 `exports` 含 `./shell` / `./file` / `./background` / `./ptc`，`cordis.yml` 以 `name: dsh-ops/shell` 挂载） |
+| 验证 | `js-yaml` 解析通过，2 个顶级条目、`insert` 含 2 条；无 BOM |
+
+### 教训
+
+- 🔴 **改包名时，`cordis.patch.yml` 里的 `name:` 每一行都要数一遍条数**：`insert` 是数组，漏一条不会报错，插件照常启动，只是那个子能力静默消失。**「改名前有几条 insert」应当是改名操作的前置基线**，改完拿条数对比，而不是只看第一条改对了没有。
+- 🔴 **`exports` 里有子路径 ≠ 会被挂载**：`exports["./tui"]` 只说明"可以被解析到"，真正决定加不加载的是 bundle patch 里那条 `insert`。两者同时存在才有效，缺任一半都是「文件在、功能不在」。
+- 🔴 **1.0.9 把它标成「已知问题」是对的，但不能停在那里**：文档如实标注只是止血，真 bug 必须单独一版修掉，否则每一版都要在 README 里重复这段免责声明。
+
+## 1.0.9 — 2026-10-19
+
+**纯文档版本，`lib/*.js` 一行未改。** 目标是让文档与代码真实行为一致。
+
+| # | 问题 | 修法 | 取证 |
+| --- | --- | --- | --- |
+| 1 | 根 `README.md` 实质内容只有一句「See the repository README for install, models, tools, and security boundaries.」——而它**指向的就是它自己**（GitHub 根 README 同为 2498 B，md5 `6b462372…`）。npm 上点开 README 等于什么都没有。 | 重写根 README：补安装、能力、模型、命令、架构、安全、数据去向各节，并从 `docs/README.md` 搬入实质内容 | `md5sum README.md` = `6b462372ca5df60cc933d6593c6f35a0`（本地）与实际 GitHub 根 README 一致；正文第 3 行即那句自指 |
+| 2 | `files` 白名单不含 `docs/` → 真正的 6624 B 文档 `docs/README.md` **永远进不了 npm 包** | `files` 追加 `docs/README.md`（未加整个 `docs/`：其中 `docs/assets/` 是 6.2 MB 的 6 个 gif，只用于 GitHub 展示） | `gh api …/contents/docs/assets` 实测 6 个 gif 合计 6,252,701 B |
+| 3 | README 从未提及 `bin`、`exports["./tui"]`、`exports["./invariant"]`、`login --token-stdin` | README 新增「TUI、CLI 与更新」「包导出」两节，逐项列全 | `package.json` 的 `bin` = `{"dsh-deepseek-web-free":"lib/bin.js"}`；`exports` 六项含 `./tui`、`./invariant`；`lib/bin.js:8` 判 `action === "login" && flag === "--token-stdin"` |
+| 4 | README 从未提及隐私披露 | README 新增「数据去向 / 隐私边界」，把 `disclosure` 逐字段列表解释 | `package.json` 顶层 `disclosure`（**不在 `dsh` 块内**）实测值 |
+| 5 | 旧 README 称「根目录就是插件本体」，与仓库实况不符（仓库根还有 `packages/ docs/ tests/ scripts/ .github/ LICENSES/ pnpm-workspace.yaml` 等） | 新增「仓库结构」表：哪些是插件本体（进包）、哪些是开发/存档目录（不进包） | `gh api …/contents/` 根目录清单实测 |
+| 6 | `docs/README.md` 是上游原文：标题 `# dsh-deepseek-web`、安装命令与 npm 链接全指上游包、全文 `free` 出现 **0** 次。读者照它装会装到不含本 fork 修复的旧版 | 改写为本 fork 版：标题/包名/安装命令/徽章全换成 `-free`，新增「与上游的关系」对照表 + 6 条修复清单，上游原文保留到 `docs/upstream/README.upstream.md` | 上游原文全文 grep `free` 计数 = 0；安装命令原文为 `dsh plugin --profile web add dsh-deepseek-web` |
+| 7 | `description` 只描述"在 packages/plugin 里"，对用户无信息量 | 改中英双语，讲清是 fork + 适配 DSH 0.2.x | — |
+| 8 | **（核对中新发现）** 文档从未提 `cordis.patch.yml` 里那条 `agent-default-model` 覆盖 —— 装上插件会**改用户新会话的默认模型**，这是最容易被当成"DSH 坏了"的行为变化 | README 新增「装载行为与可配置项」，把补丁原文与生效优先级写清；docs 对照表与修复清单各补一条 | 本地 `cordis.patch.yml` 含 `- id: agent-default-model` / `config: {provider: deepseek-web, model: default}`；**经与上游 `gh api repos/y-wi/dsh-deepseek-web/contents/packages/plugin/cordis.patch.yml` 比对，上游也有同一块** → 属原样承袭，非本 fork 新增。但本机 `profiles/web/node_modules/dsh-deepseek-web/cordis.patch.yml` 被人为删掉了这段（注释 "Locally adjusted by DSH (2026-08-20): upstream agent-default-model override stripped"），三份副本互不一致 |
+| 9 | **（核对中新发现）** 文档从未列用户可配置字段 | README 新增 `Config` schema 全字段表（10 项 + 取值范围 + 默认值 + 越界报错），并注明 `nativeSearch` **不在** schema 中（`resolveConfig` 硬编码 `"on"`） | `lib/index.js` 的 `z.object({...})` 实测；`lib/config-DACadRbL.js` 的 `resolveConfig` 中 `nativeSearch: "on"` 为字面量 |
+| 10 | **（核对中新发现，未修）** 本 fork 的 `cordis.patch.yml` **缺上游那条 TUI insert 条目** —— 上游有 `deepseek-web-tui` / `dsh-deepseek-web/tui` / `inject: [deepSeekWeb]` 两条 insert，本 fork 只剩 `llm-deepseek-web-free` 一条。后果：`./tui` 导出存在但**不会被自动挂载**，TUI profile 里 `deepSeekWeb` 服务不存在 | 1.0.9 只改文档 → 在 README 与 docs 中**如实标注为已知问题并给出手工补条目的写法**；修 patch 需动 `cordis.patch.yml`（非文档），留待下一版 | 上游 patch 两条 insert vs 本 fork 一条，`gh api` 原文与本地 `cat` 直接对比 |
+
+### 教训
+
+- 🔴 **「README 自指」是最隐形的空文档事故**：文件存在、大小正常、CI 不报错、GitHub 能渲染，只是内容在说「去看 README」。它和「文件丢失」的症状完全不同，任何"文件非空"的检查都会放行。**判定文档是否为空壳，要读正文第一句在指什么，不要只看字节数。**
+- 🔴 **`files` 白名单是发布事故的常客**：不在白名单里的文件，GitHub 上看着好好的，npm 用户一个字节都拿不到。**发布前必跑 `npm pack --dry-run` 看实际清单**，确认 README 有实质内容、`docs/` 等打算随包的目录确实在里面；`npm pack --dry-run --json` 更直观。
+- 🔴 **fork 必须清掉上游的"安装指路牌"**：文档里的包名、安装命令、npm 链接、徽章仓库名，任何一处还指着上游，读者就会装错包、然后以为自己遇到的是本 fork 的 bug。改包名时 `README*` 里的 `dsh-deepseek-web` 必须逐处核查（注意别误改"上游项目地址"这类**本意就要指上游**的链接）。
+- 🔴 **往 `files` 里加目录前先看目录里有什么**：`docs/` 里塞着 6.2 MB 的演示 gif，整目录入包会让 tarball 暴涨且对 npm 用户毫无用处（npm 页面不渲染包内图片）。只加真正需要的文件。
+- 🔴 **函数式参数（functional options）会藏住"隐藏的全局副作用"**：`apply(ctx, config)` 里那次 `resolveConfig(raw)` 返回的 `nativeSearch: "on"` 是**硬编码字面量**，`Config` schema 里根本没有这个键。看 schema 会以为"可配置"，看默认值会以为"配置改了能生效"，实际两条路都不通。**判断某选项是否可配置，要同时看 schema 里有没有它、以及最终 resolve 时用的是 raw 还是常量。**
+- 🔴 **补丁文件的"副作用"必须写进文档**：`cordis.patch.yml` 里那条 `- id: agent-default-model` 会改宿主默认模型。这类"装插件顺带改了别处配置"的行为，用户不读 patch 文件就完全无从得知，出问题时只会报「DSH 自己变了」。**凡是 patch 里出现 `- id: <宿主自身条目>` 的覆盖块，README 必须点名。**
+- 🔴 **同一份文件的三处副本可能互不一致，比对时必须找出处**：本轮差点把"上游 patch 也有 `agent-default-model`"误写成"本 fork 新增"——因为本机 `profiles/web/node_modules/dsh-deepseek-web/cordis.patch.yml` 被本地改过、删掉了这段。**判断"某个行为是不是本 fork 引入的"，要拿上游仓库原文（`gh api …/contents/…`），不能拿本机某个安装副本当基准。** 三个副本状态：上游 GitHub 原文 = 有覆盖块 + 两条 insert；本 fork = 有覆盖块 + 一条 insert；本机 web profile 的上游副本 = 无覆盖块 + 一条 insert（本地手改）。
+- 🔴 **改名时要数"条目个数"，不只是改字符串**：1.0.6 改包名时，上游 patch 有**两条** insert 条目，改完只剩一条（TUI 那条整个丢了），而 `./tui` 导出和 `lib/tui.js` 都还在。字符串搜索永远发现不了"少了一条"。**改名后要拿新旧文件做结构对比（条目数、层级、key 集合），不要只 grep 名字对不对。**
+
 ## 1.0.8
 
 - **侧边栏会话浮层背景改为不透明**。`.dsw-web-menu` 原本沿用宿主的

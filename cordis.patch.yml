@@ -9,3 +9,6 @@
 - insert:
     - id: llm-deepseek-web-free
       name: dsh-deepseek-web-free
+    - id: deepseek-web-free-tui
+      name: dsh-deepseek-web-free/tui
+      inject: [deepSeekWeb]
