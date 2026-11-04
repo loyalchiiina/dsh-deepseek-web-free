@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { LOGIN_PATH, STATUS_PATH, importTokenFromPanel, pluginFetch } from './api.ts'
+import { LOGIN_PATH, LOGOUT_PATH, STATUS_PATH, importTokenFromPanel, pluginFetch } from './api.ts'
 import type { DeepSeekWebSettingsKey } from './locales.ts'
 
 export interface WebPanelAuthBannerProps {
@@ -10,6 +10,8 @@ export interface WebPanelAuthBannerProps {
   onSignedOut?: () => void
   /** Reads the token the embedded page currently holds (null when the page is signed out). */
   readPageToken?: () => Promise<string | null>
+  /** Current URL of the embedded page, used to recognise the sign-in page. */
+  readPageUrl?: () => string
 }
 
 const CSS_ID = 'dsh-deepseek-web/webpanel-auth'
@@ -49,8 +51,14 @@ export function WebPanelAuthBanner(props: WebPanelAuthBannerProps): JSX.Element 
   signedOutRef.current = props.onSignedOut
   const readTokenRef = useRef<(() => Promise<string | null>) | undefined>(props.readPageToken)
   readTokenRef.current = props.readPageToken
+  const readUrlRef = useRef<(() => string) | undefined>(props.readPageUrl)
+  readUrlRef.current = props.readPageUrl
   const previous = useRef<'unknown' | 'in' | 'out'>('unknown')
   const lastTried = useRef<string>('')
+  /** True once this guest has been observed holding a page session (i.e. it was signed in). */
+  const sawPageSession = useRef(false)
+  /** Consecutive polls that found no page token — guards against reacting mid-load. */
+  const signInStreak = useRef(0)
 
   const readStatus = useCallback(async (): Promise<boolean> => {
     try {
@@ -80,13 +88,47 @@ export function WebPanelAuthBanner(props: WebPanelAuthBannerProps): JSX.Element 
    */
   const tick = useCallback(async (): Promise<void> => {
     const signedIn = await readStatus()
+    const reader = readTokenRef.current
+    const token = reader === undefined ? null : await reader()
+    if (token !== null && token.length > 0) {
+      sawPageSession.current = true
+      signInStreak.current = 0
+    } else {
+      signInStreak.current += 1
+    }
     if (signedIn) {
       setSyncError('')
+      // Reverse sign-out: the user logged out inside the embedded page (it is now
+      // sitting on /sign_in with no session), but the Host still holds a stale
+      // credential. Drop it, otherwise the settings page keeps claiming "signed
+      // in" and every fresh panel is seeded with a dead token.
+      const url = readUrlRef.current?.() ?? ''
+      // Two different situations both mean "the Host credential is dead":
+      //  a) we saw a page session and it vanished  -> the user logged out in the page (fast path);
+      //  b) we never saw one and the page sits on /sign_in for a while -> the seeded token was
+      //     rejected (e.g. logged out on the web earlier). Slow path so we never wipe a good
+      //     credential while the page is still loading.
+      const threshold = sawPageSession.current ? 2 : 6
+      const onSignInPage = url.includes('/sign_in')
+      // `url === ''` means the guest is not attached yet — never judge on that.
+      const detached = url.length === 0
+      const dropCredential =
+        !detached &&
+        token === null &&
+        ((onSignInPage && signInStreak.current >= threshold) ||
+          (sawPageSession.current && signInStreak.current >= 8))
+      if (dropCredential) {
+        sawPageSession.current = false
+        signInStreak.current = 0
+        try {
+          await pluginFetch(LOGOUT_PATH, { method: 'POST', body: JSON.stringify({}) })
+        } catch {
+          // Ignore: a failed host logout must not wedge the poll loop.
+        }
+        await readStatus()
+      }
       return
     }
-    const reader = readTokenRef.current
-    if (reader === undefined) return
-    const token = await reader()
     if (token === null || token.length === 0 || token === lastTried.current) return
     lastTried.current = token
     try {

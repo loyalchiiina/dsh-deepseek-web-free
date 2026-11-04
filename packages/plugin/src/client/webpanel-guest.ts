@@ -422,6 +422,17 @@ export class WebPanelGuest {
     }
   }
 
+  /** Current URL of the embedded page (empty string when the guest is not attached yet). */
+  currentUrl(): string {
+    const element = this.element
+    if (element === undefined) return ''
+    try {
+      return element.getURL()
+    } catch {
+      return ''
+    }
+  }
+
   /**
    * Drops the page-side session so this surface follows a Host-side sign-out.
    * Without this the guest keeps its own cookie/localStorage login and looks

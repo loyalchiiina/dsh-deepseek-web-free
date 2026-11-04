@@ -448,6 +448,7 @@ export function DeepSeekWebPanel(props: DeepSeekWebPanelProps): JSX.Element | nu
             onSignedIn={() => guestRef.current?.reload()}
             onSignedOut={() => { void guestRef.current?.clearSession() }}
             readPageToken={() => guestRef.current?.readPageToken() ?? Promise.resolve(null)}
+            readPageUrl={() => guestRef.current?.currentUrl() ?? ''}
           />
           <div className="dsw-webpanel-body">
             <div ref={containerRef} className="dsw-webpanel-frame" />
