@@ -6,19 +6,29 @@ import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import { DeepSeekWebSettings } from './DeepSeekWebSettings.tsx'
 import type { DeepSeekWebSettingsInjected } from './DeepSeekWebSettings.tsx'
-import { DeepSeekSidebarAction } from './DeepSeekSidebarAction.tsx'
+import { DeepSeekPanelToggle } from './DeepSeekPanelToggle.tsx'
+import type { DeepSeekPanelToggleInjected } from './DeepSeekPanelToggle.tsx'
+import { DeepSeekWebPanel } from './DeepSeekWebPanel.tsx'
+import type { DeepSeekWebPanelInjected } from './DeepSeekWebPanel.tsx'
+import { DeepSeekWebPanelTab } from './DeepSeekWebPanelTab.tsx'
+import type { DeepSeekWebPanelTabInjected } from './DeepSeekWebPanelTab.tsx'
 import { ForkToWorkspaceAction } from './ForkToWorkspaceAction.tsx'
 import { en, zh } from './locales.ts'
 import type { DeepSeekWebSettingsKey } from './locales.ts'
 import {
+  PANEL_TAB_KIND,
   FORK_ACTION_ID,
   FORK_ACTION_ORDER,
   FORK_ACTION_SLOT,
+  PANEL_ID,
+  PANEL_ORDER,
+  PANEL_SLOT,
   SIDEBAR_ACTION_ID,
   SIDEBAR_ACTION_ORDER,
   SIDEBAR_ACTION_SLOT,
 } from './slot-ids.ts'
 import { openHarnessSession } from './wait-for-session.ts'
+import { openWebPanel } from './webpanel-bus.ts'
 import type { WorkspaceChoice } from './WorkspaceForkPopover.tsx'
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {
@@ -28,7 +38,7 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 }
 
 export const name = 'dsh-deepseek-web-client'
-export const inject = ['slots', 'locale', 'sessions', 'workspaces']
+export const inject = ['slots', 'locale', 'sessions', 'workspaces', 'sidebarRight', 'sidebarRightTabs']
 
 function workspaceChoices(workspaces: HarnessWorkspacesLike | undefined): WorkspaceChoice[] {
   const items = workspaces?.list?.getSnapshot()?.items ?? []
@@ -49,13 +59,22 @@ export function apply(ctx: ClientContext): void {
   ctx.effect(() => ctx.locale.register(namespace, { zh, en }), 'dsh-deepseek-web: settings copy')
   const t = ctx.locale.bind(namespace) as DeepSeekWebSettingsInjected['t']
   const openSession = (sessionId: string) => openHarnessSession(ctx.sessions, sessionId)
+  // Docked variant: one tab inside the right sidebar (better-sidebar renders official
+  // tab types, so this surfaces next to its built-in browser tab).
+  const openPanelTab = (url?: string) => {
+    try {
+      ctx.sidebarRight?.openTab?.(PANEL_TAB_KIND, url !== undefined && url.length > 0 ? { params: { url } } : {})
+    } catch {
+      // sidebarRight can be absent when no session surface is mounted yet.
+    }
+  }
 
   ctx.slots.inject('settings.section', () => ctx.slots.register({
     name: 'settings.section',
     id: 'deepseek-web',
     order: 16,
     label: () => t('nav'),
-    inject: (): DeepSeekWebSettingsInjected => ({ t }),
+    inject: (): DeepSeekWebSettingsInjected => ({ t, openPanelTab }),
   }, DeepSeekWebSettings))
 
   ctx.slots.inject(SIDEBAR_ACTION_SLOT, () => ctx.slots.register({
@@ -63,11 +82,8 @@ export function apply(ctx: ClientContext): void {
     id: SIDEBAR_ACTION_ID,
     order: SIDEBAR_ACTION_ORDER,
     locale: namespace,
-    inject: () => ({
-      t,
-      openSession,
-    }),
-  }, DeepSeekSidebarAction))
+    inject: (): DeepSeekPanelToggleInjected => ({ t, openPanelTab }),
+  }, DeepSeekPanelToggle))
 
   ctx.slots.inject(FORK_ACTION_SLOT, () => ctx.slots.register({
     name: FORK_ACTION_SLOT,
@@ -84,4 +100,28 @@ export function apply(ctx: ClientContext): void {
       },
     }),
   }, ForkToWorkspaceAction))
+
+  ctx.slots.inject(PANEL_SLOT, () => ctx.slots.register({
+    name: PANEL_SLOT,
+    id: PANEL_ID,
+    order: PANEL_ORDER,
+    locale: namespace,
+    inject: (): DeepSeekWebPanelInjected => ({ t, openPanelTab }),
+  }, DeepSeekWebPanel))
+
+  ctx.effect(() => ctx.sidebarRightTabs?.register?.({
+    id: PANEL_TAB_KIND,
+    kind: PANEL_TAB_KIND,
+    priority: 'builtin',
+    title: () => t('panelTitle'),
+    multiple: true,
+    keepMounted: true,
+  }), 'dsh-deepseek-web-free: panel tab type')
+
+  ctx.slots.inject('sidebar.right.pane.tab', () => ctx.slots.register({
+    name: 'sidebar.right.pane.tab',
+    key: PANEL_TAB_KIND,
+    locale: namespace,
+    inject: (): DeepSeekWebPanelTabInjected => ({ t, openFloatPanel: openWebPanel }),
+  }, DeepSeekWebPanelTab))
 }

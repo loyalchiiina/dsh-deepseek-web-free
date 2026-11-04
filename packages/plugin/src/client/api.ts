@@ -5,6 +5,13 @@ export const LOGOUT_PATH = '/plugins/dsh-deepseek-web/auth/logout'
 export const DOCTOR_PATH = '/plugins/dsh-deepseek-web/doctor'
 export const SESSIONS_PATH = '/plugins/dsh-deepseek-web/sessions'
 export const FORK_PATH = '/plugins/dsh-deepseek-web/fork'
+export const WEBPANEL_TOKEN_PATH = '/plugins/dsh-deepseek-web/webpanel/token'
+export const IMPORT_PATH = '/plugins/dsh-deepseek-web/auth/import'
+
+/** Pushes a token captured inside the web panel back to the Host credential store. */
+export async function importTokenFromPanel(token: string): Promise<void> {
+  await pluginFetch(IMPORT_PATH, { method: 'POST', body: JSON.stringify({ token }) })
+}
 
 export class PluginApiError extends Error {
   readonly code?: string

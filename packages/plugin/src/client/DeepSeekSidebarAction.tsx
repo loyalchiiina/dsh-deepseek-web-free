@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExter
 import type { CSSProperties, KeyboardEvent } from 'react'
 import { IconQueueOutline14, useDismissOnOutsidePointer } from '@deepseek-ai/dsh-client-ui-primitives'
 import {
+  MENU_PANEL,
   MENU_REFRESH,
   MENU_RETRY,
   MENU_SIGN_IN,
@@ -15,10 +16,26 @@ import {
   type PopoverPlacement,
 } from './popover-position.ts'
 import { RemoteSessionsController } from './RemoteSessionsController.ts'
+import { openWebPanel } from './webpanel-bus.ts'
+import { loadPrefs } from './webpanel-prefs.ts'
 
 export interface DeepSeekSidebarActionInjected {
   t: (key: DeepSeekWebSettingsKey) => string
   openSession: (sessionId: string) => Promise<void>
+  /** Open the docked sidebar tab (used when the panel position preference is "sidebar"). */
+  openPanelTab?: (url?: string) => void
+}
+
+/** Route a panel-open request to the docked tab or the floating drawer. */
+function openPanelPreferred(
+  openPanelTab: ((url?: string) => void) | undefined,
+  url?: string,
+): void {
+  if (loadPrefs().position === 'sidebar' && openPanelTab !== undefined) {
+    openPanelTab(url)
+    return
+  }
+  openWebPanel(url)
 }
 
 export type DeepSeekSidebarActionProps = Partial<DeepSeekSidebarActionInjected> & {
@@ -133,8 +150,19 @@ export function DeepSeekSidebarAction(props: DeepSeekSidebarActionProps): JSX.El
       void controller.beginLogin()
       return
     }
+    if (id === MENU_PANEL) {
+      setOpen(false)
+      openWebPanel()
+      return
+    }
     if (id.startsWith('::')) return
     void openRemote(id)
+  }
+
+  const onPanel = (url: string): void => {
+    setOpen(false)
+    triggerRef.current?.focus()
+    openWebPanel(url)
   }
 
   const openRemote = async (chatSessionId: string): Promise<void> => {
@@ -195,6 +223,7 @@ export function DeepSeekSidebarAction(props: DeepSeekSidebarActionProps): JSX.El
           items={menu.items}
           footer={menu.footer}
           onSelect={onSelect}
+          onPanel={onPanel}
           onKeyDown={onKeyDown}
           onReachEnd={state.phase === 'ready' && state.nextCursor !== undefined ? onReachEnd : undefined}
           style={panelStyle(placement)}

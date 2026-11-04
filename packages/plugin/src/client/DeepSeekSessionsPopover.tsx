@@ -1,20 +1,27 @@
 import type { MenuEntry } from '@deepseek-ai/dsh-client-ui-primitives'
 import { IconRefreshOutline16 } from '@deepseek-ai/dsh-client-ui-primitives'
+import type { HostMenuRow } from './host-menu.tsx'
 import type { DeepSeekWebSettingsKey } from './locales.ts'
 import type { RemoteSessionsState } from './remote-session-types.ts'
 
 export const MENU_REFRESH = '::refresh'
 export const MENU_RETRY = '::retry'
 export const MENU_SIGN_IN = '::signin'
+export const MENU_PANEL = '::panel'
+
+/** chat.deepseek.com deep link for one remote conversation. */
+export function deepLinkFor(chatSessionId: string): string {
+  return `https://chat.deepseek.com/a/chat/s/${chatSessionId}`
+}
 
 export function sessionMenuEntries(
   state: RemoteSessionsState,
   t: (key: DeepSeekWebSettingsKey) => string,
   options?: { openingId?: string; error?: string },
-): { items: MenuEntry[]; footer?: MenuEntry[] } {
+): { items: HostMenuRow[]; footer?: MenuEntry[] } {
   const openingId = options?.openingId
   const error = options?.error
-  const items: MenuEntry[] = []
+  const items: HostMenuRow[] = []
   if (error !== undefined) {
     items.push({ type: 'label', id: 'open-error', text: error })
   }
@@ -33,6 +40,8 @@ export function sessionMenuEntries(
         id: item.chatSessionId,
         label: opening ? `${item.title || item.chatSessionId}  ${t('sessionsOpening')}` : (item.title || item.chatSessionId),
         disabled: openingId !== undefined,
+        panelUrl: deepLinkFor(item.chatSessionId),
+        panelLabel: t('panelOpenShort'),
       })
     }
     if (state.phase === 'loading-more') {
@@ -51,6 +60,9 @@ export function sessionMenuEntries(
       label: t('sessionsRefresh'),
       icon: <IconRefreshOutline16 />,
     })
+  }
+  if (state.phase !== 'signed-out') {
+    footer.push({ id: MENU_PANEL, label: t('panelAction') })
   }
 
   return footer.length > 0 ? { items, footer } : { items }

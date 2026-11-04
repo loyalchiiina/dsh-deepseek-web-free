@@ -4,9 +4,15 @@ import { Button, StateDot } from '@deepseek-ai/dsh-client-ui-primitives'
 import { CANCEL_PATH, DOCTOR_PATH, LOGIN_PATH, LOGOUT_PATH, pluginFetch, STATUS_PATH } from './api.ts'
 import type { DeepSeekWebSettingsKey } from './locales.ts'
 import type { ClientAuthState } from './state.ts'
+import { openWebPanel } from './webpanel-bus.ts'
+import type { WebPanelPosition } from './webpanel-prefs.ts'
+import { DEFAULT_WEBPANEL_PREFS, loadPrefs, savePrefs, subscribePrefs } from './webpanel-prefs.ts'
+import type { WebPanelPrefs } from './webpanel-prefs.ts'
 
 export interface DeepSeekWebSettingsInjected {
   t: (key: DeepSeekWebSettingsKey) => string
+  /** Open the docked sidebar tab or the floating drawer, honoring the position preference. */
+  openPanelTab?: (url?: string) => void
 }
 
 export type DeepSeekWebSettingsProps = Partial<DeepSeekWebSettingsInjected>
@@ -168,7 +174,17 @@ export function DeepSeekWebSettings(props: DeepSeekWebSettingsProps): JSX.Elemen
   const [doctor, setDoctor] = useState<string>('')
   const [error, setError] = useState<string>('')
   const [busy, setBusy] = useState(false)
+  const [prefs, setPrefs] = useState<WebPanelPrefs>(() => (typeof localStorage === 'undefined'
+    ? { ...DEFAULT_WEBPANEL_PREFS }
+    : loadPrefs()))
   const signingIn = isSigningIn(state.status)
+
+  useEffect(() => subscribePrefs(next => setPrefs(next)), [])
+
+  const updatePrefs = (next: WebPanelPrefs): void => {
+    setPrefs(next)
+    savePrefs(next)
+  }
 
   const refresh = useCallback(async () => {
     const next = await pluginFetch(STATUS_PATH) as ClientAuthState
@@ -204,6 +220,7 @@ export function DeepSeekWebSettings(props: DeepSeekWebSettingsProps): JSX.Elemen
       <div>
         <h2 style={titleStyle}>{t('title')}</h2>
         <p style={introStyle}>{t('intro')}</p>
+        <p style={introStyle}>{t('introPermanent')}</p>
       </div>
       <ul style={rowsStyle}>
         <li style={rowCardStyle}>
@@ -277,6 +294,57 @@ export function DeepSeekWebSettings(props: DeepSeekWebSettingsProps): JSX.Elemen
             </Button>
           </div>
           {doctor ? <pre style={outputStyle}>{doctor}</pre> : null}
+        </li>
+        <li style={rowCardStyle}>
+          <div>
+            <h3 style={cardTitleStyle}>{t('panelSection')}</h3>
+            <p style={cardIntroStyle}>{t('panelSectionIntro')}</p>
+          </div>
+          <div style={rowHeadStyle}>
+            <span style={rowIdentityStyle}>
+              <StateDot state={prefs.enabled ? 'done' : 'warning'} />
+              <span style={rowNameStyle}>{t('panelEnable')}</span>
+            </span>
+            <span style={rowActionsStyle}>
+              <Button variant="outline" size="sm" onClick={() => updatePrefs({ ...prefs, enabled: !prefs.enabled })}>
+                {prefs.enabled ? t('panelOn') : t('panelOff')}
+              </Button>
+            </span>
+          </div>
+          <p style={metaStyle}>{t('panelEnableHint')}</p>
+          <div style={rowHeadStyle}>
+            <span style={rowNameStyle}>{t('panelPosition')}</span>
+            <span style={rowActionsStyle}>
+              {([
+                ['sidebar', t('panelPositionSidebar')],
+                ['ball', t('panelPositionBall')],
+              ] as [WebPanelPosition, string][]).map(([value, label]) => (
+                <Button
+                  key={value}
+                  variant={prefs.position === value ? 'primary' : 'ghost'}
+                  size="sm"
+                  onClick={() => updatePrefs({ ...prefs, position: value })}
+                >
+                  {label}
+                </Button>
+              ))}
+            </span>
+          </div>
+          <p style={metaStyle}>{t('panelPositionHint')}</p>
+          <div style={editorActionsStyle}>
+            <Button
+              variant="primary"
+              size="sm"
+              disabled={!prefs.enabled}
+              onClick={() => {
+                if (prefs.position === 'sidebar' && props.openPanelTab !== undefined) props.openPanelTab()
+                else openWebPanel()
+              }}
+            >
+              {t('panelOpenNow')}
+            </Button>
+          </div>
+          <p style={metaStyle}>{t('panelShortcut')}</p>
         </li>
       </ul>
     </div>

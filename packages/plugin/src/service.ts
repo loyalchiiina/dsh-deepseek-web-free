@@ -56,6 +56,20 @@ export class DeepSeekWebService {
     return this.auth.cancel()
   }
 
+  /**
+   * Imports a token captured inside the embedded web panel: the guest page owns
+   * the session (`localStorage.userToken`), the Host owns the permanent
+   * credential. Validating first means a stale or forged value never lands in
+   * the credential store, so signing in on either surface keeps both in sync.
+   */
+  async importToken(token: string): Promise<BrowserAuthState> {
+    const normalized = token.trim()
+    if (normalized.length < 16) throw new Error('token is too short')
+    await this.options.validateCredential(normalized)
+    await this.options.storeCredential(normalized)
+    return this.status()
+  }
+
   async doctor(): Promise<{ ok: boolean; checks: Array<{ name: string; ok: boolean; detail: string }> }> {
     const checks = []
     const status = await this.status()

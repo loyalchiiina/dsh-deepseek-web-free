@@ -2,10 +2,17 @@ import type { CSSProperties, KeyboardEvent, ReactNode, Ref } from 'react'
 import { useEffect, useRef } from 'react'
 import type { MenuEntry } from '@deepseek-ai/dsh-client-ui-primitives'
 
+/**
+ * A menu row may carry an extra deep link that opens the same conversation in
+ * the embedded DeepSeek web panel instead of materializing a harness session.
+ */
+export type HostMenuRow = MenuEntry & { panelUrl?: string; panelLabel?: string }
+
 export interface HostMenuPanelProps {
-  items: readonly MenuEntry[]
-  footer?: readonly MenuEntry[]
+  items: readonly HostMenuRow[]
+  footer?: readonly HostMenuRow[]
   onSelect: (id: string) => void
+  onPanel?: (url: string) => void
   onKeyDown?: (event: KeyboardEvent<HTMLDivElement>) => void
   onReachEnd?: () => void
   style?: CSSProperties
@@ -15,7 +22,8 @@ export interface HostMenuPanelProps {
 
 const HOST_MENU_CSS_ID = 'dsh-deepseek-web/host-menu'
 const HOST_MENU_CSS = [
-  '.dsw-web-menu{z-index:1100;box-sizing:border-box;--dsh-scrollbar-thumb:var(--dsw-alias-scrollbar-bg-l2);--dsh-scrollbar-thumb-hover:var(--dsw-alias-scrollbar-hover-l2);border:1px solid var(--dsw-alias-border-inverted);background:var(--dsw-specific-menu);box-shadow:var(--dsw-shadow-lv3);color:var(--dsw-alias-label-primary);border-radius:12px;flex-direction:column;padding:4px;display:flex;overflow:hidden}',
+  // Opaque layer background: the menu floats over chat content and must never bleed through.
+  '.dsw-web-menu{z-index:1100;box-sizing:border-box;--dsh-scrollbar-thumb:var(--dsw-alias-scrollbar-bg-l2);--dsh-scrollbar-thumb-hover:var(--dsw-alias-scrollbar-hover-l2);border:1px solid var(--dsw-alias-border-inverted);background:var(--dsw-alias-bg-layer-3);box-shadow:var(--dsw-shadow-lv3);color:var(--dsw-alias-label-primary);border-radius:12px;flex-direction:column;padding:4px;display:flex;overflow:hidden}',
   '.dsw-web-menu-viewport{flex:1 1 auto;flex-direction:column;min-height:0;display:flex;overflow-y:auto}',
   '.dsw-web-menu-footer{flex:none;flex-direction:column;margin-top:4px;padding-top:4px;border-top:1px solid var(--dsw-alias-border-l2);display:flex}',
   '.dsw-web-menu-item{cursor:pointer;width:100%;min-height:40px;color:var(--dsw-alias-label-primary);text-align:left;background:transparent;border:none;border-radius:10px;align-items:center;gap:8px;padding:8px 10px;font:inherit;font-size:14px;line-height:22px;display:flex}',
@@ -26,6 +34,10 @@ const HOST_MENU_CSS = [
   '.dsw-web-menu-label{color:var(--dsw-alias-label-tertiary);padding:8px 10px;font-size:12px;line-height:18px}',
   '.dsw-web-menu-separator{height:1px;margin:4px 6px;background:var(--dsw-alias-border-l2);border:none}',
   '.dsw-web-menu-sentinel{flex:none;height:1px;width:100%;pointer-events:none}',
+  '.dsw-web-menu-row{align-items:center;gap:4px;display:flex}',
+  '.dsw-web-menu-row>.dsw-web-menu-item{flex:1 1 auto;min-width:0}',
+  '.dsw-web-menu-side{flex:none;height:28px;padding:0 8px;border-radius:8px;border:1px solid var(--dsw-alias-border-l2);background:transparent;color:var(--dsw-alias-label-secondary);cursor:pointer;font:inherit;font-size:12px;line-height:18px}',
+  '.dsw-web-menu-side:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}',
 ].join('')
 
 if (typeof document !== 'undefined' && document.querySelector(`style[data-plugin-css=${JSON.stringify(HOST_MENU_CSS_ID)}]`) === null) {
@@ -69,14 +81,14 @@ export function HostMenuPanel(props: HostMenuPanelProps): JSX.Element {
     >
       <div ref={viewportRef} className="dsw-web-menu-viewport" role="presentation">
         {props.items.map(entry => (
-          <HostMenuEntry key={entry.id} entry={entry} onSelect={props.onSelect} />
+          <HostMenuEntryView key={entry.id} entry={entry} onSelect={props.onSelect} onPanel={props.onPanel} />
         ))}
         {onReachEnd !== undefined ? <div ref={sentinelRef} className="dsw-web-menu-sentinel" aria-hidden /> : null}
       </div>
       {footer !== undefined && footer.length > 0 ? (
         <div className="dsw-web-menu-footer" role="presentation">
           {footer.map(entry => (
-            <HostMenuEntry key={entry.id} entry={entry} onSelect={props.onSelect} />
+            <HostMenuEntryView key={entry.id} entry={entry} onSelect={props.onSelect} onPanel={props.onPanel} />
           ))}
         </div>
       ) : null}
@@ -84,8 +96,12 @@ export function HostMenuPanel(props: HostMenuPanelProps): JSX.Element {
   )
 }
 
-function HostMenuEntry(props: { entry: MenuEntry; onSelect: (id: string) => void }): JSX.Element {
-  const { entry, onSelect } = props
+function HostMenuEntryView(props: {
+  entry: HostMenuRow
+  onSelect: (id: string) => void
+  onPanel?: (url: string) => void
+}): JSX.Element {
+  const { entry, onSelect, onPanel } = props
   if ('type' in entry && entry.type === 'separator') {
     return <hr className="dsw-web-menu-separator" />
   }
@@ -96,7 +112,7 @@ function HostMenuEntry(props: { entry: MenuEntry; onSelect: (id: string) => void
       </div>
     )
   }
-  return (
+  const row = (
     <button
       type="button"
       role="menuitem"
@@ -107,5 +123,20 @@ function HostMenuEntry(props: { entry: MenuEntry; onSelect: (id: string) => void
       {entry.icon !== undefined ? <span className="dsw-web-menu-item-icon" aria-hidden>{entry.icon}</span> : null}
       <span className="dsw-web-menu-item-label">{entry.label as ReactNode}</span>
     </button>
+  )
+  if (entry.panelUrl === undefined || onPanel === undefined) return row
+  return (
+    <div className="dsw-web-menu-row">
+      {row}
+      <button
+        type="button"
+        className="dsw-web-menu-side"
+        title={entry.panelLabel}
+        aria-label={entry.panelLabel}
+        onClick={() => onPanel(entry.panelUrl as string)}
+      >
+        {entry.panelLabel}
+      </button>
+    </div>
   )
 }

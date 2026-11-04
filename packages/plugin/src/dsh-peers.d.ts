@@ -150,6 +150,26 @@ declare module '@deepseek-ai/dsh-client-runtime/client' {
     }
     sessions?: HarnessSessionsLike
     workspaces?: HarnessWorkspacesLike
+    /** Right sidebar service; present only when a session surface is mounted. */
+    sidebarRight?: {
+      openTab?(kind: string, options?: { params?: Record<string, unknown>; paneId?: string; preferNewPane?: boolean; revealIfOpened?: boolean; replaceTab?: string }): void
+      openResource?(address: string, options?: { kind?: string; preferNewPane?: boolean }): void
+      openTabFromTarget?(kind: string, target: unknown): void
+      close?(): void
+    }
+    /** Registry for right sidebar tab types. */
+    sidebarRightTabs?: {
+      register?(definition: {
+        id: string
+        kind: string
+        title: () => string
+        priority?: string
+        multiple?: boolean
+        keepMounted?: boolean
+        guide?: unknown[]
+      }): () => void
+      get?(kind: string): unknown
+    }
   }
 
   export interface HarnessSessionsLike {
@@ -197,6 +217,7 @@ declare module '@deepseek-ai/dsh-client-ui-primitives' {
   }): JSX.Element
   export function IconFolderOpenOutline16(props?: { size?: number; className?: string }): JSX.Element
   export function IconQueueOutline14(props?: { size?: number; className?: string }): JSX.Element
+  export function IconQueueOutlineRegular(props?: { size?: number; className?: string }): JSX.Element
   export function IconRefreshOutline16(props?: { size?: number; className?: string }): JSX.Element
   export function useDismissOnOutsidePointer(
     root: RefObject<HTMLElement | null>,

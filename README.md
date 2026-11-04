@@ -152,8 +152,69 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 | DSH 原生工具 | 将 DeepSeek 网页端接入 Harness；插件把模型输出转成工具请求。FS / Shell / MCP / 审批由 Harness 执行 |
 | 网页搜索 | 始终开启官方网页端 Web Search；Expert 不能搜；不是 DSH `web_search` |
 | 预构建 WASM | 安装无需 Rust / wasm-pack；token 与 cookie **不进入** WASM |
+| 网页面板 | 在 DSH 界面内以侧边栏 tab 或鲸鱼悬浮球直接打开 `chat.deepseek.com`；登录态由 Host 侧凭据自动注入，免二次登录 |
 
 详见 [docs/remote-sessions.md](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/docs/remote-sessions.md)。
+
+## 网页面板（侧边栏 / 悬浮球）
+
+面板有两种形态，在 设置 → DeepSeek Web → 网页面板 → 位置 里切换：
+
+| 形态 | 表现 | 关闭方式 |
+| --- | --- | --- |
+| 侧边栏（默认） | 在右侧栏里开一个独立的 DeepSeek 网页 tab，与内置「浏览器」tab 并列，对话与网页左右并列互不遮挡 | 点 tab 上的 ✕，或关掉该 tab |
+| 悬浮球 | 屏幕上常驻一颗可拖动的鲸鱼圆球，点开是默认 420×640 的小窗口，右缘/下缘/右下角可拉伸调宽高（最小 320×420），尺寸自动记忆 | 点窗口 ✕、再点一次鲸鱼球，或按 Esc |
+
+- 打开：`Ctrl/Cmd+Shift+D`、侧栏底部「网页面板」开关按钮（按「位置」分派；悬浮球位置下再点一次即收起），或设置页「立即打开面板」。
+- 免登录：面板加载真实 `chat.deepseek.com`，Host 侧把已保存的凭据通过 `GET /plugins/dsh-deepseek-web-free/webpanel/token` 注入到页面存储，因此每次都是已登录状态。
+- 平台：两种形态都需要 DSH 桌面端（Electron webview）；浏览器版 DSH 只显示提示。
+
+
+
+除了把 DeepSeek 网页当模型用，插件还能在 DSH 界面里**直接打开 DeepSeek 网页本身**：屏幕边上挂一颗鲸鱼悬浮球，点开就是真实的 `chat.deepseek.com` 页面，可以直接在 DSH 里和网页端对话。
+
+### 打开方式
+
+- `Ctrl+Shift+D`（macOS 为 `Cmd+Shift+D`）打开（侧边栏位置下开 tab，悬浮球位置下展开窗口）
+- 设置 → DeepSeek Web → 「网页面板」→ 立即打开
+- 侧栏底部「网页面板」开关按钮（1.0.14 起替代原「DeepSeek Web 会话」弹层入口）
+- 侧栏会话列表每一行右侧的小按钮「在面板打开」→ 直接跳到该网页会话（深链 `chat.deepseek.com/a/chat/s/<id>`）
+
+### 交互
+
+| 操作 | 行为 |
+| --- | --- |
+| 拖鲸鱼球 | 球可自由拖动，位置记忆；移动不超过 4px 视为点击 |
+| 拖窗口标题栏 | 窗口可自由拖动，位置记忆；超出屏幕自动收回可视区 |
+| `Esc` | 关闭窗口（球保留） |
+| 标题栏 ← / → | 后退 / 前进 |
+| 标题栏刷新 | 刷新（加载中变「停止」） |
+| 标题栏「在系统浏览器打开」 | 交给系统默认浏览器 |
+| 关闭窗口 | 只隐藏不卸载，网页状态与草稿保留 |
+| 鲸鱼图标 | 官方 DeepSeek 标志，`currentColor` 上色：浅色主题黑、深色主题白 |
+
+### 免登录是怎么做的
+
+插件把已保存的 DeepSeek 账号 token 通过同源路由 `GET /plugins/dsh-deepseek-web-free/webpanel/token` 交给渲染进程，面板在自己的 guest 分区里把 token 写进 `localStorage.userToken` 然后刷新页面——网页自己完成登录，PoW、WebSocket、API 全部在页面内原生跑，**不需要在面板里再登录一次，也不走任何本地反代**。
+
+> token 只在 Host 与 DSH 渲染进程之间传递，不落盘、不出现在页面 URL 里；路由受 `trustedPluginRequest` 保护（仅 loopback + 同源）。
+
+### 登录统一（反向同步，1.0.20 起）
+
+面板的 guest 分区是内存分区（每次启动换新的 `partition`），所以在面板里手动登录得到的会话**关窗即失效**。1.0.20 补上了反向通道，两个入口共用同一份宿主凭据：
+
+- **面板里登录 → 自动永久**：页面登录后，插件读取页面自己的 `localStorage.userToken`，POST 到同源路由 `/plugins/dsh-deepseek-web/auth/import`；Host 先用上游 `currentUser()` 校验，通过才写入 DSH 凭据库。下次重启直接免登录。
+- **设置页里登录 → 面板自动生效**：宿主凭据仍是唯一真源，面板加载时照旧注入（见上节）。
+- **未登录提示条**：面板顶部检测到宿主未登录时显示说明 +「一键登录」，走宿主登录流程（弹出隔离浏览器），成功后自动刷新面板。
+- 设置页与 README 都写明「登录一次即永久生效」，避免新用户以为面板是另一个账号体系。
+
+### 平台限制
+
+面板依赖 DSH 桌面端的 Electron `<webview>` 通道（`window.dshDesktop.browser`）。Web 端因为没有该通道，面板会提示「仅桌面端可用」——`chat.deepseek.com` 的 CSP `frame-ancestors 'none'` 不允许普通 iframe 嵌入。
+
+### 与既有能力共存
+
+原有功能全部保留、互不影响：provider `deepseek-web` 的模型列表（`default` / `expert`）、DeepThink 思考开关、网页搜索、侧栏会话接续、派生到工作区、隔离浏览器登录与 profile。
 
 ## 模型
 
@@ -286,6 +347,8 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 | `.github/` | CI 与模板 | ❌ |
 
 > ⚠️ **`packages/` 里的 TS 源码不能重新构建出当前的 `lib/`。** 1.0.4 起的全部修复是直接改在 `lib/` 构建产物上的（见 CHANGELOG）。**以 `lib/` 为准**，`packages/` 只作 1.0.3 上游基线存档。
+>
+> 1.0.11 的「网页面板」源码写在 `packages/plugin/src/client/`（`DeepSeekWebPanel.tsx` / `webpanel-guest.ts` / `webpanel-bus.ts` / `webpanel-prefs.ts` 及若干改动文件），但**仍然手工移植进 `lib/client.js`、`lib/index.js` 后发布**，没有走 `pnpm build` 覆盖 —— 原因同上：`pnpm build` 出来的产物缺 1.0.4–1.0.10 的手改修复、且包名不带 `-free`。
 
 > ⚠️ 本机开发副本 `~/.dsh/local-plugins/dsh-deepseek-web-free` 只保留上表第一行的发布子集，不含 `packages/` `tests/` `scripts/` `LICENSES/` 等开发目录 —— 那是正常的，不是文件丢失。
 

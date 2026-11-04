@@ -200,7 +200,7 @@ export function apply(ctx: Context, config: Config): void {
   // there rather than an error.
   if (installSettingsSectionFn) {
     installSettingsSectionFn(ctx, NS, Config, config, {
-      setSource: source => {
+      setSource: (source: unknown) => {
         current = source as () => Config
       },
       onChange: () => options(),
