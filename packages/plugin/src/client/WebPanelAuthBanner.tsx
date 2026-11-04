@@ -14,18 +14,18 @@ export interface WebPanelAuthBannerProps {
   readPageUrl?: () => string
 }
 
-const CSS_ID = 'dsh-deepseek-web/webpanel-auth3'
+const CSS_ID = 'dsh-deepseek-web/webpanel-auth4'
 
-const BRAND = 'var(--dsw-alias-brand-primary,#4d6bfe)'
+// Explicit colours (no theme variables) — a themed version rendered as a beige strip.
 const CSS = [
-  `.dsw-webpanel-auth{flex:none;display:flex;flex-direction:column;gap:12px;padding:16px 16px 18px;background:linear-gradient(135deg,${BRAND},color-mix(in srgb,${BRAND} 78%,#101a4d))}`,
+  '.dsw-webpanel-auth{display:flex;flex-direction:column;gap:12px;padding:16px 16px 18px;background:#d92c2c;background-image:linear-gradient(135deg,#f0453f,#c81e2b)}',
   '.dsw-webpanel-auth-head{display:flex;align-items:center;gap:10px}',
-  `.dsw-webpanel-auth-icon{flex:none;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:9px;background:rgba(255,255,255,.2);color:#fff}`,
-  '.dsw-webpanel-auth-text{flex:1 1 auto;min-width:0;font-size:14.5px;font-weight:600;line-height:1.55;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.12)}',
-  '.dsw-webpanel-auth-btn{width:100%;height:44px;border:0;border-radius:12px;background:#fff;color:#2f45c9;font:inherit;font-size:15px;font-weight:700;letter-spacing:.5px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.18);transition:filter .15s ease,transform .15s ease}',
-  '.dsw-webpanel-auth-btn:hover:not(:disabled){filter:brightness(.97)}',
-  '.dsw-webpanel-auth-btn:active:not(:disabled){transform:translateY(1px)}',
-  '.dsw-webpanel-auth-btn:disabled{opacity:.65;cursor:default}',
+  '.dsw-webpanel-auth-icon{flex:none;display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.22);color:#fff}',
+  '.dsw-webpanel-auth-text{flex:1 1 auto;min-width:0;font-size:15px;font-weight:600;line-height:1.5;color:#fff}',
+  '.dsw-webpanel-auth-btn{width:100%;height:112px;border:0;border-radius:14px;background:#fff;color:#c81e2b;font-size:56px;font-weight:800;letter-spacing:4px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25);transition:filter .15s ease,transform .15s ease}',
+  '.dsw-webpanel-auth-btn:hover:not(:disabled){filter:brightness(.96)}',
+  '.dsw-webpanel-auth-btn:active:not(:disabled){transform:translateY(2px)}',
+  '.dsw-webpanel-auth-btn:disabled{opacity:.7;cursor:default}',
 ]
 
 if (typeof document !== 'undefined' && document.querySelector(`style[data-plugin-css=${JSON.stringify(CSS_ID)}]`) === null) {
@@ -178,8 +178,11 @@ export function WebPanelAuthBanner(props: WebPanelAuthBannerProps): JSX.Element 
     ? `同步失败：${syncError}`
     : (failed ? t('panelSignInFailed') : t('panelSignInHint'))
   return (
-    <div className="dsw-webpanel-auth">
-      <div className="dsw-webpanel-auth-head">
+    <div
+      className="dsw-webpanel-auth"
+      style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '16px 16px 18px', background: '#d92c2c', backgroundImage: 'linear-gradient(135deg,#f0453f,#c81e2b)' }}
+    >
+      <div className="dsw-webpanel-auth-head" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <span className="dsw-webpanel-auth-icon" aria-hidden="true">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="8" cy="8" r="4.2" />
@@ -195,6 +198,7 @@ export function WebPanelAuthBanner(props: WebPanelAuthBannerProps): JSX.Element 
         className="dsw-webpanel-auth-btn"
         disabled={signingIn}
         onClick={() => { void signIn() }}
+        style={{ width: '100%', height: 112, border: 0, borderRadius: 14, background: '#fff', color: '#c81e2b', fontSize: 56, fontWeight: 800, letterSpacing: 4, cursor: signingIn ? 'default' : 'pointer', boxShadow: '0 4px 14px rgba(0,0,0,.25)', fontFamily: 'inherit' }}
       >
         {signingIn ? t('panelSigningIn') : t('panelSignInAction')}
       </button>
