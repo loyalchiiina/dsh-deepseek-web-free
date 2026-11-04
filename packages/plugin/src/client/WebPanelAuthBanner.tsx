@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { LOGIN_PATH, STATUS_PATH, pluginFetch } from './api.ts'
+import { LOGIN_PATH, STATUS_PATH, importTokenFromPanel, pluginFetch } from './api.ts'
 import type { DeepSeekWebSettingsKey } from './locales.ts'
 
 export interface WebPanelAuthBannerProps {
@@ -8,6 +8,8 @@ export interface WebPanelAuthBannerProps {
   onSignedIn?: () => void
   /** Called when the Host credential disappears (e.g. signed out in the settings page). */
   onSignedOut?: () => void
+  /** Reads the token the embedded page currently holds (null when the page is signed out). */
+  readPageToken?: () => Promise<string | null>
 }
 
 const CSS_ID = 'dsh-deepseek-web/webpanel-auth'
@@ -30,17 +32,25 @@ if (typeof document !== 'undefined' && document.querySelector(`style[data-plugin
  * Shown inside the panel whenever the Host has no stored credential. It exists so a
  * brand-new user learns that one sign-in is permanent, instead of signing in inside
  * the page and losing that session when the in-memory guest partition dies.
+ *
+ * It also closes the reverse direction: a sign-in performed inside the embedded page
+ * is read back and pushed to the Host store, so the settings page and the model list
+ * pick it up without any manual step.
  */
 export function WebPanelAuthBanner(props: WebPanelAuthBannerProps): JSX.Element | null {
   const t = props.t
   const [state, setState] = useState<'unknown' | 'in' | 'out'>('unknown')
   const [signingIn, setSigningIn] = useState(false)
   const [failed, setFailed] = useState(false)
+  const [syncError, setSyncError] = useState<string>('')
   const signedInRef = useRef<(() => void) | undefined>(props.onSignedIn)
   signedInRef.current = props.onSignedIn
   const signedOutRef = useRef<(() => void) | undefined>(props.onSignedOut)
   signedOutRef.current = props.onSignedOut
+  const readTokenRef = useRef<(() => Promise<string | null>) | undefined>(props.readPageToken)
+  readTokenRef.current = props.readPageToken
   const previous = useRef<'unknown' | 'in' | 'out'>('unknown')
+  const lastTried = useRef<string>('')
 
   const readStatus = useCallback(async (): Promise<boolean> => {
     try {
@@ -59,18 +69,42 @@ export function WebPanelAuthBanner(props: WebPanelAuthBannerProps): JSX.Element 
     }
   }, [])
 
-  // Poll while mounted: the credential can change from the settings page or from
-  // the other panel surface (they share one Host store).
-  useEffect(() => {
-    void readStatus()
-    const timer = window.setInterval(() => { void readStatus() }, 4000)
-    return () => window.clearInterval(timer)
+  /**
+   * Poll both sides. Reading the page token on a timer (not only on navigation)
+   * is what makes "sign in inside the embedded page" work reliably: DeepSeek's
+   * login is a single-page flow, so no navigation event is guaranteed.
+   */
+  const tick = useCallback(async (): Promise<void> => {
+    const signedIn = await readStatus()
+    if (signedIn) {
+      setSyncError('')
+      return
+    }
+    const reader = readTokenRef.current
+    if (reader === undefined) return
+    const token = await reader()
+    if (token === null || token.length === 0 || token === lastTried.current) return
+    lastTried.current = token
+    try {
+      await importTokenFromPanel(token)
+      setSyncError('')
+      await readStatus()
+    } catch (caught: unknown) {
+      setSyncError(caught instanceof Error ? caught.message : String(caught))
+    }
   }, [readStatus])
+
+  useEffect(() => {
+    void tick()
+    const timer = window.setInterval(() => { void tick() }, 3000)
+    return () => window.clearInterval(timer)
+  }, [tick])
 
   const signIn = useCallback(async (): Promise<void> => {
     if (signingIn) return
     setSigningIn(true)
     setFailed(false)
+    setSyncError('')
     try {
       await pluginFetch(LOGIN_PATH, { method: 'POST', body: JSON.stringify({}) })
       for (let attempt = 0; attempt < 80; attempt += 1) {
@@ -89,11 +123,12 @@ export function WebPanelAuthBanner(props: WebPanelAuthBannerProps): JSX.Element 
   }, [readStatus, signingIn])
 
   if (state !== 'out') return null
+  const text = syncError.length > 0
+    ? `同步失败：${syncError}`
+    : (failed ? t('panelSignInFailed') : t('panelSignInHint'))
   return (
     <div className="dsw-webpanel-auth">
-      <span className="dsw-webpanel-auth-text">
-        {failed ? t('panelSignInFailed') : t('panelSignInHint')}
-      </span>
+      <span className="dsw-webpanel-auth-text">{text}</span>
       <button
         type="button"
         className="dsw-webpanel-auth-btn"

@@ -65,7 +65,15 @@ export class DeepSeekWebService {
   async importToken(token: string): Promise<BrowserAuthState> {
     const normalized = token.trim()
     if (normalized.length < 16) throw new Error('token is too short')
-    await this.options.validateCredential(normalized)
+    // The token is read out of a page that is already signed in, so it is very
+    // likely valid. Validation is best-effort: if the account probe is blocked
+    // (PoW / rate limit / offline), still store it — refusing here would leave a
+    // signed-in panel with a permanently "signed out" settings page.
+    try {
+      await this.options.validateCredential(normalized)
+    } catch {
+      // Ignored on purpose; the provider will surface a bad token on first use.
+    }
     await this.options.storeCredential(normalized)
     return this.status()
   }

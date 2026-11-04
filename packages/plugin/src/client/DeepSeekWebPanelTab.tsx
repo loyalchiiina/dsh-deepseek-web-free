@@ -146,6 +146,7 @@ export function DeepSeekWebPanelTab(props: DeepSeekWebPanelTabProps): JSX.Elemen
         t={t}
         onSignedIn={() => guestRef.current?.reload()}
         onSignedOut={() => { void guestRef.current?.clearSession() }}
+        readPageToken={() => guestRef.current?.readPageToken() ?? Promise.resolve(null)}
       />
       <div className="dsw-webpanel-body">
         <div ref={containerRef} className="dsw-webpanel-frame" />

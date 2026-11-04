@@ -407,6 +407,22 @@ export class WebPanelGuest {
   }
 
   /**
+   * Reads the page-side session token, if the page holds one right now. Used by
+   * the panel's slow poll so a sign-in done at any moment is picked up even when
+   * no navigation event fires.
+   */
+  async readPageToken(): Promise<string | null> {
+    const element = this.element
+    if (element === undefined) return null
+    try {
+      const value = await element.executeJavaScript(HARVEST_SCRIPT, true)
+      return typeof value === 'string' && value.length >= 16 ? value : null
+    } catch {
+      return null
+    }
+  }
+
+  /**
    * Drops the page-side session so this surface follows a Host-side sign-out.
    * Without this the guest keeps its own cookie/localStorage login and looks
    * signed in while the settings page already shows "signed out".
