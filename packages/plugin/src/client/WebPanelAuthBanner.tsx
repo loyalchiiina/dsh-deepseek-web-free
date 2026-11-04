@@ -14,12 +14,16 @@ export interface WebPanelAuthBannerProps {
   readPageUrl?: () => string
 }
 
-const CSS_ID = 'dsh-deepseek-web/webpanel-auth'
+const CSS_ID = 'dsh-deepseek-web/webpanel-auth2'
 
+const BRAND = 'var(--dsw-alias-brand-primary,#4d6bfe)'
 const CSS = [
-  '.dsw-webpanel-auth{flex:none;display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid var(--dsw-alias-border-l2);background:color-mix(in srgb,var(--dsw-alias-state-warning-primary,#d99b1a) 12%,transparent)}',
-  '.dsw-webpanel-auth-text{flex:1 1 auto;min-width:0;font-size:11px;line-height:1.45;color:var(--dsw-alias-label-secondary)}',
-  '.dsw-webpanel-auth-btn{flex:none;height:24px;padding:0 10px;border:0;border-radius:999px;background:var(--dsw-alias-brand-primary,#4d6bfe);color:#fff;font:inherit;font-size:11px;cursor:pointer}',
+  `.dsw-webpanel-auth{flex:none;display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid color-mix(in srgb,${BRAND} 28%,transparent);background:linear-gradient(90deg,color-mix(in srgb,${BRAND} 16%,transparent),color-mix(in srgb,${BRAND} 6%,transparent))}`,
+  `.dsw-webpanel-auth-icon{flex:none;display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:${BRAND};color:#fff}`,
+  '.dsw-webpanel-auth-text{flex:1 1 auto;min-width:0;font-size:13px;font-weight:500;line-height:1.5;color:var(--dsw-alias-label-primary)}',
+  `.dsw-webpanel-auth-btn{flex:none;height:34px;padding:0 20px;border:0;border-radius:10px;background:${BRAND};color:#fff;font:inherit;font-size:13.5px;font-weight:600;letter-spacing:.3px;cursor:pointer;box-shadow:0 2px 6px color-mix(in srgb,${BRAND} 45%,transparent);transition:filter .15s ease,transform .15s ease}`,
+  '.dsw-webpanel-auth-btn:hover:not(:disabled){filter:brightness(1.08)}',
+  '.dsw-webpanel-auth-btn:active:not(:disabled){transform:translateY(1px)}',
   '.dsw-webpanel-auth-btn:disabled{opacity:.6;cursor:default}',
 ]
 
@@ -174,6 +178,14 @@ export function WebPanelAuthBanner(props: WebPanelAuthBannerProps): JSX.Element 
     : (failed ? t('panelSignInFailed') : t('panelSignInHint'))
   return (
     <div className="dsw-webpanel-auth">
+      <span className="dsw-webpanel-auth-icon" aria-hidden="true">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="8" cy="8" r="4.2" />
+          <path d="M11 11l9 9" />
+          <path d="M17.5 17.5l2-2" />
+          <path d="M15 15l2-2" />
+        </svg>
+      </span>
       <span className="dsw-webpanel-auth-text">{text}</span>
       <button
         type="button"
