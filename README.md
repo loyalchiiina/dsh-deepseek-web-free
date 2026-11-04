@@ -2,7 +2,7 @@
 
 # dsh-deepseek-web-free
 
-**把 DeepSeek 网页端接入 DeepSeek Harness —— `y-wi/dsh-deepseek-web` 的 fork**
+**把 DeepSeek 网页端接入 DeepSeek Harness，并在对话界面内嵌网页面板 —— `y-wi/dsh-deepseek-web` 的 fork**
 
 [English](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/docs/README.en.md) · [安装](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/docs/INSTALL.md) · [npm](https://www.npmjs.com/package/dsh-deepseek-web-free) · [CHANGELOG](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/CHANGELOG.md)
 
@@ -21,6 +21,15 @@
 非官方 Provider。本仓库开放 Harness **集成层与传输层**；协议兼容由随包分发的预编译 WebAssembly 提供。
 
 本项目与 DeepSeek **无隶属或背书关系**。使用你自己的 DeepSeek 账号。插件不会绕过 CAPTCHA、WAF 或账号访问控制；交互式验证在隔离浏览器窗口中完成。
+
+> [!WARNING]
+> **免责声明（务必先读）**
+>
+> 本插件只是为了**让你在 DSH 里直接用 DeepSeek 网页端更方便**：它复用你**自己的** DeepSeek 网页账号登录态来过模型请求，也可以把网页面板嵌进 DSH 侧栏 / 悬浮球里直接对话。它**不加速、不绕过**任何风控，也不承诺长期可用。
+>
+> **使用网页端能力可能存在账号风险**（包括但不限于：被限流、被临时或永久封禁、会话异常、页面行为变化导致功能失效）。**由此产生的任何后果由使用者自行承担，本项目与作者不承担任何责任**，也不提供任何形式的担保。请自行评估风险后再决定是否登录使用。
+>
+> 本项目与 DeepSeek 无隶属或背书关系，请遵守 DeepSeek 的服务条款与使用政策。
 
 ## 关于本 fork
 
@@ -107,6 +116,8 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 ## 能力
 
 （截图资源只在 GitHub 仓库中提供，npm 包内不含 gif。）
+
+**网页面板（1.0.12 起）：** 除了「把网页端当模型」，插件还能把 `chat.deepseek.com` **直接嵌进 DSH 界面**——右侧栏标签页，或一颗可拖动、可拉伸的**鲸鱼悬浮球窗口**（位置与尺寸跨重启记忆、拖球时窗口跟随）。**登录只需一次**：设置页登录与面板内登录双向同步，退出也一样同步，重启后无需重登。详见下文「网页面板」一节。
 
 <table>
 <tr>
@@ -358,6 +369,13 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 - [贡献](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/docs/CONTRIBUTING.md)
 - [English README](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/docs/README.en.md)
 - [上游项目](https://github.com/y-wi/dsh-deepseek-web)
+
+## 免责声明
+
+- **用途**：本插件仅为方便用户在 DSH 内直接使用 DeepSeek 网页端（当模型、或打开网页面板对话），不提供任何 DeepSeek 官方未开放的加速、绕过或批量能力。
+- **账号风险**：把网页端登录态用于第三方客户端**可能违反 DeepSeek 服务条款**，可能导致账号被限流、被冻结或封禁。请使用你自己的账号并自行评估风险。
+- **责任**：作者与贡献者**不对任何直接或间接损失承担责任**（包括但不限于账号损失、数据丢失、服务中断）。软件按「现状」提供，不附带任何明示或暗示担保。
+- **合规**：请遵守所在地区法律法规与 DeepSeek 的服务条款；若你不同意上述条款，请勿安装或使用本插件。
 
 ## 许可证
 

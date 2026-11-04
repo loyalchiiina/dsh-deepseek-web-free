@@ -161,6 +161,13 @@ See [SECURITY.md](./SECURITY.md) and [docs/browser-auth.md](./docs/browser-auth.
 - [Releases](https://github.com/y-wi/dsh-deepseek-web/releases)
 - [中文 README](./README.md)
 
+## Disclaimer
+
+- **Purpose**: this plugin only makes it convenient to use the DeepSeek web app from inside DSH (as an LLM source, or through the embedded web panel). It does not provide acceleration, rate-limit bypassing, or any capability DeepSeek has not opened up.
+- **Account risk**: reusing a web login from a third-party client **may violate DeepSeek's Terms of Service** and can lead to rate limiting, suspension or a permanent ban. Use your own account and judge the risk yourself.
+- **Liability**: the authors accept **no responsibility** for any direct or indirect damage (including account loss, data loss or service interruption). The software is provided "as is", without warranty of any kind.
+- **Compliance**: follow your local laws and DeepSeek's terms. If you do not agree, do not install or use this plugin.
+
 ## License
 
 MIT for the TypeScript integration layer. See [LICENSE](./LICENSE) and [LICENSES/PROTOCOL_CORE.txt](./LICENSES/PROTOCOL_CORE.txt) for the precompiled core. Notices: [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md).
