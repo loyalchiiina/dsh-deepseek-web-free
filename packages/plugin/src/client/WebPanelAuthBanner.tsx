@@ -21,7 +21,7 @@ const CSS = [
   '.dsw-webpanel-auth{display:flex;flex-direction:column;gap:12px;padding:16px 16px 18px;background:#d92c2c;background-image:linear-gradient(135deg,#f0453f,#c81e2b)}',
   '.dsw-webpanel-auth-head{display:flex;align-items:center;gap:10px}',
   '.dsw-webpanel-auth-icon{flex:none;display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.22);color:#fff}',
-  '.dsw-webpanel-auth-text{flex:1 1 auto;min-width:0;font-size:15px;font-weight:600;line-height:1.5;color:#fff}',
+  '.dsw-webpanel-auth-text{flex:1 1 auto;min-width:0;font-size:19px;font-weight:700;line-height:1.5;color:#111111}',
   '.dsw-webpanel-auth-btn{width:100%;height:112px;border:0;border-radius:14px;background:#fff;color:#c81e2b;font-size:56px;font-weight:800;letter-spacing:4px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25);transition:filter .15s ease,transform .15s ease}',
   '.dsw-webpanel-auth-btn:hover:not(:disabled){filter:brightness(.96)}',
   '.dsw-webpanel-auth-btn:active:not(:disabled){transform:translateY(2px)}',
@@ -191,7 +191,7 @@ export function WebPanelAuthBanner(props: WebPanelAuthBannerProps): JSX.Element 
             <path d="M15 15l2-2" />
           </svg>
         </span>
-        <span className="dsw-webpanel-auth-text">{text}</span>
+        <span className="dsw-webpanel-auth-text" style={{ flex: '1 1 auto', minWidth: 0, fontSize: 19, fontWeight: 700, lineHeight: 1.5, color: '#111111' }}>{text}</span>
       </div>
       <button
         type="button"
