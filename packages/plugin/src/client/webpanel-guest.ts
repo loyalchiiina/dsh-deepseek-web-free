@@ -93,12 +93,35 @@ function seedScript(token: string): string {
  */
 const HARVEST_SCRIPT = [
   '(function () {',
+  '  function unwrap(raw) {',
+  '    if (typeof raw !== "string" || raw.length === 0) return null;',
+  '    if (raw.charAt(0) !== "{") return raw;',
+  '    try {',
+  '      var parsed = JSON.parse(raw);',
+  '      if (parsed && typeof parsed.value === "string") return parsed.value;',
+  '      if (parsed && typeof parsed.token === "string") return parsed.token;',
+  '      return null;',
+  '    } catch (error) {',
+  '      return null;',
+  '    }',
+  '  }',
+  '  function looksLikeToken(value) {',
+  '    return typeof value === "string" && value.length >= 24 && /[A-Za-z0-9._-]{24,}/.test(value);',
+  '  }',
   '  try {',
-  '    var raw = localStorage.getItem("userToken");',
-  '    if (!raw) return null;',
-  '    var parsed = JSON.parse(raw);',
-  '    var value = parsed && typeof parsed.value === "string" ? parsed.value : null;',
-  '    return value && value.length >= 16 ? value : null;',
+  '    // The page normally keeps its session here; accept both the JSON envelope and a bare string.',
+  '    var direct = unwrap(localStorage.getItem("userToken"));',
+  '    if (looksLikeToken(direct)) return direct;',
+  '    // Fallbacks: any localStorage entry whose key mentions a token, plus a JWT-looking value.',
+  '    var best = null;',
+  '    for (var i = 0; i < localStorage.length; i += 1) {',
+  '      var key = String(localStorage.key(i) || "");',
+  '      var value = unwrap(localStorage.getItem(key));',
+  '      if (!looksLikeToken(value)) continue;',
+  '      if (key.toLowerCase().indexOf("token") >= 0) return value;',
+  '      if (best === null && value.indexOf("eyJ") === 0) best = value;',
+  '    }',
+  '    return best;',
   '  } catch (error) {',
   '    return null;',
   '  }',
@@ -235,6 +258,13 @@ export class WebPanelGuest {
       }
       this.readGuest()
     })
+    element.addEventListener('did-navigate-in-page', () => {
+      // Single-page routing (which is what a DeepSeek login looks like) must also
+      // re-arm the harvester, or the token created during login is never read.
+      this.harvestRetries = 0
+      this.readGuest()
+      void this.harvestToken(element.getURL())
+    })
     element.addEventListener('did-navigate-in-page', () => this.readGuest())
     element.addEventListener('did-start-loading', () => this.update({ loading: true }))
     element.addEventListener('did-stop-loading', () => {
@@ -327,7 +357,7 @@ export class WebPanelGuest {
     const element = this.element
     if (element === undefined) return
     if (!url.startsWith('https://chat.deepseek.com')) return
-    if (this.harvestRetries >= 4) return
+    if (this.harvestRetries >= 8) return
     this.harvestRetries += 1
     let value: unknown
     try {
@@ -373,6 +403,28 @@ export class WebPanelGuest {
     const element = this.element
     if (element === undefined) return
     this.seeded.clear()
+    element.reload()
+  }
+
+  /**
+   * Drops the page-side session so this surface follows a Host-side sign-out.
+   * Without this the guest keeps its own cookie/localStorage login and looks
+   * signed in while the settings page already shows "signed out".
+   */
+  async clearSession(): Promise<void> {
+    const element = this.element
+    if (element === undefined) return
+    this.seeded.clear()
+    this.harvested.clear()
+    this.harvestRetries = 0
+    try {
+      await element.executeJavaScript(
+        '(function () { try { localStorage.removeItem("userToken"); return "ok" } catch (error) { return "err" } })()',
+        true,
+      )
+    } catch {
+      // Best effort: a reload below still drops any in-memory page state.
+    }
     element.reload()
   }
 

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
-import { LOGIN_PATH, STATUS_PATH, WEBPANEL_TOKEN_PATH, importTokenFromPanel, pluginFetch } from './api.ts'
+import { WEBPANEL_TOKEN_PATH, importTokenFromPanel, pluginFetch } from './api.ts'
+import { WebPanelAuthBanner } from './WebPanelAuthBanner.tsx'
 import type { DeepSeekWebSettingsKey } from './locales.ts'
 import { subscribeWebPanel } from './webpanel-bus.ts'
 import { WebPanelGuest } from './webpanel-guest.ts'
@@ -178,45 +179,6 @@ export function DeepSeekWebPanel(props: DeepSeekWebPanelProps): JSX.Element | nu
   const containerRef = useRef<HTMLDivElement>(null)
   const guestRef = useRef<WebPanelGuest>()
   const pendingUrlRef = useRef<string>(WEBPANEL_DEFAULT_URL)
-  // Host credential state, so the panel can offer the same one-time sign-in the
-  // settings page does instead of leaving a session that dies with the window.
-  const [authState, setAuthState] = useState<'unknown' | 'in' | 'out'>('unknown')
-  const [signingIn, setSigningIn] = useState(false)
-  const [signInFailed, setSignInFailed] = useState(false)
-
-  const refreshAuth = useCallback(async (): Promise<void> => {
-    try {
-      const result = await pluginFetch(STATUS_PATH) as { status?: string }
-      setAuthState(result?.status === 'signed-in' ? 'in' : 'out')
-    } catch {
-      setAuthState('unknown')
-    }
-  }, [])
-
-  const signIn = useCallback(async (): Promise<void> => {
-    if (signingIn) return
-    setSigningIn(true)
-    setSignInFailed(false)
-    try {
-      await pluginFetch(LOGIN_PATH, { method: 'POST', body: JSON.stringify({}) })
-      // The Host opens a browser window and polls the token; mirror that here so
-      // the panel picks the new credential up without a DSH restart.
-      for (let attempt = 0; attempt < 60; attempt += 1) {
-        await new Promise<void>(resolve => { window.setTimeout(resolve, 1500) })
-        const result = await pluginFetch(STATUS_PATH) as { status?: string }
-        if (result?.status === 'signed-in') {
-          setAuthState('in')
-          guestRef.current?.reload()
-          return
-        }
-      }
-      setSignInFailed(true)
-    } catch {
-      setSignInFailed(true)
-    } finally {
-      setSigningIn(false)
-    }
-  }, [signingIn])
 
   const ensureGuest = useCallback((): WebPanelGuest => {
     if (guestRef.current === undefined) {
@@ -226,7 +188,9 @@ export function DeepSeekWebPanel(props: DeepSeekWebPanelProps): JSX.Element | nu
         // Reverse sync: a sign-in performed inside the guest becomes the Host
         // credential, which is the permanent copy both surfaces read.
         onPageToken: token => {
-          void importTokenFromPanel(token).then(() => setAuthState('in')).catch(() => undefined)
+          void importTokenFromPanel(token).catch((error: unknown) => {
+            console.warn('[deepseek-web] token import failed', error)
+          })
         },
         onExternalLink: url => openInSystemBrowser(url),
       })
@@ -239,12 +203,6 @@ export function DeepSeekWebPanel(props: DeepSeekWebPanelProps): JSX.Element | nu
     guestRef.current = undefined
     void guest?.dispose()
   }, [])
-
-  // Check the Host credential whenever the panel is (re)mounted or reopened.
-  useEffect(() => {
-    if (!mounted) return
-    void refreshAuth()
-  }, [mounted, refreshAuth])
 
   const show = useCallback((url?: string) => {
     if (url !== undefined && url.length > 0) pendingUrlRef.current = url
@@ -485,21 +443,11 @@ export function DeepSeekWebPanel(props: DeepSeekWebPanelProps): JSX.Element | nu
             {tool(t('panelExternal'), ICONS.external, () => openInSystemBrowser(snapshot.url.length > 0 ? snapshot.url : address))}
             {tool(t('panelClose'), ICONS.close, () => setOpen(false), { danger: true })}
           </div>
-          {authState === 'out' ? (
-            <div className="dsw-webpanel-auth">
-              <span className="dsw-webpanel-auth-text">
-                {signInFailed ? t('panelSignInFailed') : t('panelSignInHint')}
-              </span>
-              <button
-                type="button"
-                className="dsw-webpanel-auth-btn"
-                disabled={signingIn}
-                onClick={() => { void signIn() }}
-              >
-                {signingIn ? t('panelSigningIn') : t('panelSignInAction')}
-              </button>
-            </div>
-          ) : null}
+          <WebPanelAuthBanner
+            t={t}
+            onSignedIn={() => guestRef.current?.reload()}
+            onSignedOut={() => { void guestRef.current?.clearSession() }}
+          />
           <div className="dsw-webpanel-body">
             <div ref={containerRef} className="dsw-webpanel-frame" />
             {snapshot.phase === 'attaching' ? <div className="dsw-webpanel-note">{t('panelConnecting')}</div> : null}

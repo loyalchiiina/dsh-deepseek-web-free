@@ -40,6 +40,14 @@ export interface WebPanelPrefs {
 
 export const WEBPANEL_DEFAULT_URL = 'https://chat.deepseek.com'
 
+/**
+ * One storage identity for every panel surface. The docked sidebar tab and the
+ * floating whale window MUST pass the same value: the Desktop browser host keys
+ * its partition by it, so a mismatch silently produces two separate browser
+ * sessions (sign in on one surface, the other still shows signed out).
+ */
+export const WEBPANEL_WORKSPACE_KEY = 'dsh-deepseek-web-panel'
+
 const STORAGE_KEY = 'dsh.deepseek-web.webpanel.v1'
 
 export const DEFAULT_WEBPANEL_PREFS: WebPanelPrefs = {

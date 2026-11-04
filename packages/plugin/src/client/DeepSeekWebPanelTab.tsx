@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
-import { WEBPANEL_TOKEN_PATH, pluginFetch } from './api.ts'
+import { WEBPANEL_TOKEN_PATH, importTokenFromPanel, pluginFetch } from './api.ts'
 import type { DeepSeekWebSettingsKey } from './locales.ts'
 import { WebPanelGuest } from './webpanel-guest.ts'
 import type { WebPanelSnapshot } from './webpanel-guest.ts'
-import { WEBPANEL_DEFAULT_URL } from './webpanel-prefs.ts'
+import { WEBPANEL_DEFAULT_URL, WEBPANEL_WORKSPACE_KEY } from './webpanel-prefs.ts'
+import { WebPanelAuthBanner } from './WebPanelAuthBanner.tsx'
 
 export interface DeepSeekWebPanelTabInjected {
   t: (key: DeepSeekWebSettingsKey) => string
@@ -51,8 +52,16 @@ export function DeepSeekWebPanelTab(props: DeepSeekWebPanelTabProps): JSX.Elemen
   const ensureGuest = useCallback((): WebPanelGuest => {
     if (guestRef.current === undefined) {
       guestRef.current = new WebPanelGuest({
-        workspaceKey: 'dsh-deepseek-web-free-panel',
+        // Same identity as the floating window: one partition, one login session.
+        workspaceKey: WEBPANEL_WORKSPACE_KEY,
         resolveToken: resolvePanelToken,
+        // Reverse sync: signing in inside this tab must become the permanent
+        // Host credential, otherwise the settings page keeps saying "signed out".
+        onPageToken: token => {
+          void importTokenFromPanel(token).catch((error: unknown) => {
+            console.warn('[deepseek-web] token import failed', error)
+          })
+        },
         onExternalLink: url => openInSystemBrowser(url),
       })
     }
@@ -133,6 +142,11 @@ export function DeepSeekWebPanelTab(props: DeepSeekWebPanelTabProps): JSX.Elemen
         {tool(t('panelExternal'), ICONS.external, () => openInSystemBrowser(snapshot.url.length > 0 ? snapshot.url : address))}
         {tool(t('panelClose'), ICONS.close, () => tab?.actions?.close?.(), { danger: true })}
       </div>
+      <WebPanelAuthBanner
+        t={t}
+        onSignedIn={() => guestRef.current?.reload()}
+        onSignedOut={() => { void guestRef.current?.clearSession() }}
+      />
       <div className="dsw-webpanel-body">
         <div ref={containerRef} className="dsw-webpanel-frame" />
         {snapshot.phase === 'attaching' ? <div className="dsw-webpanel-note">{t('panelConnecting')}</div> : null}
