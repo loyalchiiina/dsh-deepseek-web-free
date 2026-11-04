@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.21
+
+### Fixed
+
+- **所有插件接口 404（严重）**：客户端打包时把 `/plugins/dsh-deepseek-web/...` 这些**宿主路由路径**也一起重命名成了 `/plugins/dsh-deepseek-web-free/...`（1.0.13 起的移植脚本全局正则误伤），而宿主注册的是原名 → 设置页「/auth/status returned 404」、面板 token 注入与登录统一全部失效。移植脚本改为只在**非 `/plugins/` 前缀**的模块 id 上重命名。
+- 该 bug 也是「面板里登录不是永久登录」的一半原因：`GET /webpanel/token` 404 → 面板拿不到宿主 token，只能手登且关窗即丢。
+
 ## 1.0.20
 
 ### Added
