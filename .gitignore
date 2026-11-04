@@ -2,6 +2,7 @@ node_modules/
 lib/
 dist/
 coverage/
+lib.bak*/
 
 *.tgz
 *.log

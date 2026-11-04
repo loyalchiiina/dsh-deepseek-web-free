@@ -115,45 +115,33 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 
 ## 能力
 
-（截图资源只在 GitHub 仓库中提供，npm 包内不含 gif。）
+（截图资源只在 GitHub 仓库中提供，npm 包内不含。）
 
 **网页面板（1.0.12 起）：** 除了「把网页端当模型」，插件还能把 `chat.deepseek.com` **直接嵌进 DSH 界面**——右侧栏标签页，或一颗可拖动、可拉伸的**鲸鱼悬浮球窗口**（位置与尺寸跨重启记忆、拖球时窗口跟随）。**登录只需一次**：设置页登录与面板内登录双向同步，退出也一样同步，重启后无需重登。详见下文「网页面板」一节。
 
 <table>
 <tr>
 <td>
-<img src="docs/assets/showcase-login.gif" alt="设置中用隔离浏览器登录 DeepSeek Web" width="720">
-<p><b>隔离浏览器登录。</b> 用独立浏览器登录 <code>chat.deepseek.com</code>，不读取日常 Chrome / Edge 配置。凭证只保存在 DSH 存储中。</p>
+<img src="docs/assets/showcase-panel.png" alt="网页面板嵌在 DSH 右侧栏，与对话左右并列" width="430">
+<p><b>网页面板（侧边栏）。</b> 在 DSH 右侧栏直接打开真实的 <code>chat.deepseek.com</code>，与对话左右并列、互不遮挡；也可切换成悬浮球。</p>
 </td>
 </tr>
 <tr>
 <td>
-<img src="docs/assets/showcase-switch.gif" alt="在输入栏切换 DeepSeek Web 模型与 DeepThink 推理等级" width="720">
-<p><b>切换模型。</b> 可在 <code>DeepSeek Web</code> 与 <code>DeepSeek Web Expert</code> 之间切换，并选择 DeepThink 推理等级。底部显示当轮耗时与首 token 延迟。</p>
+<img src="docs/assets/showcase-panel-chat.png" alt="在面板内对话并搜索切换模型" width="720">
+<p><b>面板内对话 + 换模型。</b> 在面板里直接与 DeepSeek 对话，还能搜索并切换模型 / 分组。底部保留网页端原生的「深度思考」「智能搜索」开关。</p>
 </td>
 </tr>
 <tr>
 <td>
-<img src="docs/assets/showcase-list.gif" alt="侧栏浮层列出 DeepSeek Web 网页会话" width="720">
-<p><b>网页会话列表。</b> 侧栏底部打开浮层，列出 DeepSeek 网页端上的会话，可刷新与滚动加载。</p>
+<img src="docs/assets/showcase-panel-toggle.png" alt="网页面板位置：悬浮球或侧边栏" width="582">
+<p><b>位置切换。</b> 悬浮球（可拖动、可拉伸的鲸鱼窗口）/ 侧边栏，一键切换。</p>
 </td>
 </tr>
 <tr>
 <td>
-<img src="docs/assets/showcase-load.gif" alt="从浮层打开网页会话并在 Harness 中接续" width="720">
-<p><b>接续网页会话。</b> 点选一条会话后在 Harness 里打开；replay 有效时续写原来的网页会话。导入时只保留用户原文。</p>
-</td>
-</tr>
-<tr>
-<td>
-<img src="docs/assets/showcase-fork.gif" alt="把助手消息派生到选定工作区后独立续聊" width="720">
-<p><b>派生到工作区。</b> 把 DeepSeek 网页端的会话派生到你选择的工作区。派生后的会话不写回原来的网页会话。</p>
-</td>
-</tr>
-<tr>
-<td>
-<img src="docs/assets/showcase-clean.gif" alt="使用斜杠命令 /clean 只发送用户原文" width="720">
-<p><b><code>/clean</code>。</b> 会话开关。打开后后续每一轮只发送你的原文（不含系统提示、工具、skills），可配合接续聊天接近网页端效果。再执行一次关闭。</p>
+<img src="docs/assets/showcase-panel-settings.png" alt="DeepSeek Web 设置页：登录、诊断、网页面板" width="470">
+<p><b>设置页。</b> 隔离浏览器登录（一次登录长期有效）、诊断、启用网页面板、选择位置、立即打开。</p>
 </td>
 </tr>
 </table>
@@ -164,6 +152,7 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 | 网页搜索 | 始终开启官方网页端 Web Search；Expert 不能搜；不是 DSH `web_search` |
 | 预构建 WASM | 安装无需 Rust / wasm-pack；token 与 cookie **不进入** WASM |
 | 网页面板 | 在 DSH 界面内以侧边栏 tab 或鲸鱼悬浮球直接打开 `chat.deepseek.com`；登录态由 Host 侧凭据自动注入，免二次登录 |
+| 图片输入 | 直接在 DSH 发图，插件读取图片经网页端 `upload_file` 上传、`fetch_files` 轮询就绪，随消息以 `ref_file_ids` 发送，由 DeepSeek 完成识图并回传；支持 PNG / JPEG / WebP / GIF，单张上限 5 MB |
 
 详见 [docs/remote-sessions.md](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/docs/remote-sessions.md)。
 
@@ -231,12 +220,12 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 
 | ID | 名称 | 输入模态 | 网页原生搜索 |
 | --- | --- | --- | --- |
-| `deepseek-web/default` | DeepSeek Web | 纯文本 | 每轮开启 |
-| `deepseek-web/expert` | DeepSeek Web Expert | 纯文本 | 不开启（协议上不能搜） |
+| `deepseek-web/default` | DeepSeek Web | 文本 + 图片 | 每轮开启 |
+| `deepseek-web/expert` | DeepSeek Web Expert | 文本 + 图片 | 不开启（协议上不能搜） |
 
 思考为 `on` / `off`（默认 `on`）。`default` 的每一轮（含续写和 `/clean`）都会打开网页搜索，插件设置里关不掉。引用来源会出现在时间线上；不会注册 DSH `web_search` 提供方。
 
-**输入模态目前为纯文本**：传入图片（`ImageBlock`）会直接抛 `DeepSeek Web does not support image understanding`，不会静默丢弃。
+**支持图片输入**：在 DSH 里直接发图，插件会把图片读取为附件并经网页端上传（`upload_file` + `fetch_files` 轮询），随消息以 `ref_file_ids` 一起发送，由 DeepSeek 网页端完成识图后把结果回传。支持 PNG / JPEG / WebP / GIF，单张上限 5 MB。
 
 ## 装载行为与可配置项
 
@@ -363,12 +352,26 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 
 > ⚠️ 本机开发副本 `~/.dsh/local-plugins/dsh-deepseek-web-free` 只保留上表第一行的发布子集，不含 `packages/` `tests/` `scripts/` `LICENSES/` 等开发目录 —— 那是正常的，不是文件丢失。
 
+## 与上游的差异（本插件维护者新增）
+
+本插件基于上游 [y-wi/dsh-deepseek-web](https://github.com/y-wi/dsh-deepseek-web) 1.0.3 基线。相对上游，以下能力由**本插件维护者自行新增/改造**（非上游原有）：
+
+- **内嵌网页面板**：侧栏标签页 + 鲸鱼悬浮球（登录一次，双向同步）——维护者新增。
+- **网页搜索（智能搜索）全程开启**：`nativeSearch` 固定为始终开启，主对话每轮都带官方网页搜索，插件内不可关闭；不依赖上游「Expert 才能搜」的旧逻辑。
+- **移除 Expert（专家）模式**：原作者的 Expert 分支依赖的网页端行为已变更，不再适用于最新 chat.deepseek.com 与最新 DSH 版本，模型列表不再提供 Expert。
+- **图片输入**（1.0.31 起）：发送图片会先上传到 DeepSeek 再随消息发送，模型可识图。
+- 持续适配最新网页端与最新 DSH 版本。
+
+上游原有能力：把 DeepSeek 网页端当作 LLM 模型使用（基础文本对话）。
+「图片输入」实现思路参考 [agent2api](https://github.com/aimod-cc/agent2api)，本插件为独立实现，未复制其代码。
+
 ## 文档
 
 - [安装](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/docs/INSTALL.md)
 - [贡献](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/docs/CONTRIBUTING.md)
 - [English README](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/docs/README.en.md)
 - [上游项目](https://github.com/y-wi/dsh-deepseek-web)
+- [参考实现：agent2api](https://github.com/aimod-cc/agent2api)（本版「图片输入」的协议思路来源；本插件为独立实现，未复制其代码）
 
 ## 免责声明
 

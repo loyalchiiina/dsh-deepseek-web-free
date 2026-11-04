@@ -1,3 +1,20 @@
+## 1.0.31
+
+本次升级新增（相对上游 1.0.3 基线，均由本插件维护者新增，非上游原有）：
+- **支持图片输入**：在 DSH 里发送图片时，读取附件字节并上传到 DeepSeek（`/api/v0/file/upload_file` → 轮询 `fetch_files`），以 `ref_file_ids` 随消息发送，模型即可识图；`default` 模型 `inputModalities` 增加 `image`。支持 PNG / JPEG / WebP / GIF，单张上限 5 MB。
+- **修复**：读取 DSH 图片附件时兼容 `sha256:` 前缀的 attachmentId，并改用「环境变量 / 库 / 用户主目录 `.dsh`」多候选路径解析（修复部分环境下解析出错误目录导致的 ENOENT）。
+- **README / 效果图**：功能描述改为「文本 + 图片」并更新能力表；效果图整体替换为 4 张新截图（网页面板、面板内对话 + 换模型、位置切换、设置页），移除旧 gif。
+
+维护者贡献与来源说明：
+- 本插件基于上游 [y-wi/dsh-deepseek-web](https://github.com/y-wi/dsh-deepseek-web) 1.0.3 基线。以下为**本插件维护者自行新增/改造**的部分（非上游原有）：
+  - **内嵌网页面板**：侧栏标签页 + 鲸鱼悬浮球（登录一次双向同步）——维护者新增。
+  - **网页搜索（智能搜索）全程开启**：`nativeSearch` 固定为始终开启，主对话每轮都带官方网页搜索。
+  - **移除 Expert（专家）模式**：原作者的 Expert 分支所依赖的网页端行为已变更，不再适用于最新 chat.deepseek.com 网页端与最新 DSH 版本，故模型列表不再提供 Expert。
+  - **图片输入**（本版 1.0.31）：见上。
+  - 持续适配最新网页端与最新 DSH 版本。
+- 上游原有能力：把 DeepSeek 网页端当作 LLM 模型使用（基础文本对话）。
+- 参考：本版「图片输入」的思路参考开源项目 [agent2api](https://github.com/aimod-cc/agent2api)（其 deepseek-web provider 为 Rust 实现）；两者协议一致（upload_file → fetch_files 轮询 → ref_file_ids），本插件用自身 compat 层独立实现，**未复制其代码**。
+
 ## 1.0.30
 
 - 文档与市场描述更新：README 增加「网页面板（侧栏标签页 / 鲸鱼悬浮球、登录一次双向同步、跨重启记忆）」能力说明；新增**醒目免责声明**（仅供个人方便使用、可能存在账号风险、作者不承担责任）。
