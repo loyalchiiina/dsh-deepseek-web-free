@@ -59,9 +59,13 @@ export function WebPanelAuthBanner(props: WebPanelAuthBannerProps): JSX.Element 
       const before = previous.current
       previous.current = signedIn ? 'in' : 'out'
       setState(signedIn ? 'in' : 'out')
-      // True unification is two-way: signing out in the settings page must also
-      // drop the session this panel holds in its own browser partition.
+      // True unification is two-way:
+      //  • signed out in the settings page → drop the session this panel holds;
+      //  • signed IN in the settings page (or it was already in) while this guest
+      //    still shows the sign-in page → re-seed the token and reload, so the
+      //    floating window opens straight into the conversation like the tab does.
       if (before === 'in' && !signedIn) signedOutRef.current?.()
+      if (before !== 'in' && signedIn) signedInRef.current?.()
       return signedIn
     } catch {
       setState('unknown')
