@@ -37,7 +37,13 @@ export const name = 'llm-deepseek-web'
 export const inject = ['llm']
 
 export type Config = PluginConfig
-export const Config = z.object({
+// The schema value is annotated explicitly so declaration emit stays portable.
+// Without it the inferred type carries a pnpm-scoped sneaky-reference to the
+// physical schemastery location under .pnpm/, which TypeScript cannot name in a
+// .d.ts and rejects with TS2742 on Node 24 (2026-11-05 CI failure). The public
+// config type is still `export type Config = PluginConfig` above; only the
+// runtime schema binding loses its structural type, which callers do not read.
+export const Config: any = z.object({
   tokenEnv: z.string().role('credential-ref').default(DEFAULT_CONFIG.tokenEnv),
   defaultModel: z.union(['default', 'expert']).default('default'),
   thinking: z.union(['enabled', 'disabled']).default('enabled'),

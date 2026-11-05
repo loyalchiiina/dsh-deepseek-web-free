@@ -1,3 +1,10 @@
+## 1.0.33
+
+修复 1.0.32 并未真正消除的 CI 失败（不改运行逻辑）：
+- **真正的 CI 根因（TS2742）**：`packages/plugin/src/index.ts` 导出的 `Config` schema 原先未标注类型，声明文件生成时（tsdown / rolldown-plugin-dts）推断出的类型带有一个 pnpm 作用域内的物理路径引用 `.pnpm/@deepseek-ai+schemastery@3.18.5/node_modules/@deepseek-ai/schemastery`，TypeScript 无法在 `.d.ts` 中命名它，Node 24 环境报 `TS2742: The inferred type of 'Config' cannot be named without a reference to ...`，使 `pnpm build` 失败；Node 22 环境未触发，故 1.0.32 的修复只看到第一层 `TS5058` 便以为已修好。
+- **修法**：给 `export const Config` 显式标注类型（`Config: any`）。对外配置类型仍由 `export type Config = PluginConfig` 精确提供，运行期行为不变；生成的声明文件改为可移植的 `declare const Config: any`。
+- 本地已按 CI 等价流程验证全绿：`pnpm typecheck` / `pnpm test`（9/9）/ `pnpm build`（含 `lib/index.d.ts` 生成）/ `pnpm pack:plugin` + 打包 smoke（wasm、manifest、client.js、cordis.patch.yml 均在，无 `workspace:*`）。
+
 ## 1.0.32
 
 发布工程性修复（不改运行代码，功能与 1.0.31 一致）：
