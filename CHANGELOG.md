@@ -1,3 +1,10 @@
+## 1.0.32
+
+发布工程性修复（不改运行代码，功能与 1.0.31 一致）：
+- **修复 CI 全红**：根 `package.json` 的 `typecheck` / `test` / `build` 脚本改为按 workspace 递归执行（`pnpm -r typecheck` / `pnpm -r build`），并补回原本缺失的 `pack:plugin`（`pnpm --filter ./packages/plugin pack --pack-destination packages/plugin`）。此前根目录缺少 `tsconfig.json` 却执行 `tsc -p tsconfig.json`，CI 报 `TS5058: The specified path does not exist: 'tsconfig.json'`，导致 6 个 matrix job 全部失败。
+- **清理发布包**：移除 `lib/` 下 15 个开发遗留备份文件（`client.js.bak-1.0.12-float` … `1.0.25-pre`、`client.js.orig-1.0.10`、`index.js.bak-26.11.05-00.18`），并将 `files` 白名单从整目录 `"lib"` 收紧为 `lib/*.js` / `lib/*.d.ts` / `lib/*.map`。npm 包文件数 42 → 27，不再夹带内部历史/调试版本。
+- 运行代码（`lib/client.js`、`lib/index.js` 等）无任何改动，功能与 1.0.31 完全一致。
+
 ## 1.0.31
 
 本次升级新增（相对上游 1.0.3 基线，均由本插件维护者新增，非上游原有）：
