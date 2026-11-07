@@ -6,7 +6,8 @@
  * share React state. A module-level listener set is the smallest thing that
  * lets any of them say "open (or toggle) the panel, optionally at this deep link".
  */
-export type WebPanelRequest = { url?: string; toggle?: boolean }
+export type WebPanelSurface = 'ball' | 'sidebar'
+export type WebPanelRequest = { url?: string; toggle?: boolean; close?: WebPanelSurface }
 
 type Listener = (request: WebPanelRequest) => void
 
@@ -36,4 +37,13 @@ export function subscribeWebPanel(listener: Listener): () => void {
   return () => {
     listeners.delete(listener)
   }
+}
+
+/**
+ * Ask one surface to tear itself down. Only one DeepSeek webview may be alive at a
+ * time: the two surfaces share one storage partition, and keeping both attached
+ * makes the second guest come up blank / wedged.
+ */
+export function closeWebPanelSurface(surface: WebPanelSurface): void {
+  dispatch({ close: surface })
 }

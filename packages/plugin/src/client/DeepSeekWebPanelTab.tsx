@@ -5,6 +5,7 @@ import type { DeepSeekWebSettingsKey } from './locales.ts'
 import { WebPanelGuest } from './webpanel-guest.ts'
 import type { WebPanelSnapshot } from './webpanel-guest.ts'
 import { WEBPANEL_DEFAULT_URL, WEBPANEL_WORKSPACE_KEY } from './webpanel-prefs.ts'
+import { closeWebPanelSurface, subscribeWebPanel } from './webpanel-bus.ts'
 import { WebPanelAuthBanner } from './WebPanelAuthBanner.tsx'
 
 export interface DeepSeekWebPanelTabInjected {
@@ -52,6 +53,7 @@ export function DeepSeekWebPanelTab(props: DeepSeekWebPanelTabProps): JSX.Elemen
   const ensureGuest = useCallback((): WebPanelGuest => {
     if (guestRef.current === undefined) {
       guestRef.current = new WebPanelGuest({
+        surface: 'sidebar',
         // Same identity as the floating window: one partition, one login session.
         workspaceKey: WEBPANEL_WORKSPACE_KEY,
         resolveToken: resolvePanelToken,
@@ -72,6 +74,23 @@ export function DeepSeekWebPanelTab(props: DeepSeekWebPanelTabProps): JSX.Elemen
     const guest = guestRef.current
     guestRef.current = undefined
     void guest?.dispose()
+  }, [])
+
+  // One webview at a time: the floating ball asks this tab to close before it comes
+  // up, because both guests share one storage partition and the second one wedges.
+  useEffect(() => subscribeWebPanel(request => {
+    if (request.close !== 'sidebar') return
+    try {
+      tab?.actions?.close?.()
+    } catch {
+      // The tab host may already be gone; nothing to close.
+    }
+  }), [tab])
+
+  // Opening the docked tab retires the floating window: both share one DeepSeek
+  // session, and leaving both guests attached makes the next one come up black.
+  useEffect(() => {
+    closeWebPanelSurface('ball')
   }, [])
 
   useEffect(() => {

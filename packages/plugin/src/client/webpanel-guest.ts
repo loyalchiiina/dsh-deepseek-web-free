@@ -129,6 +129,8 @@ const HARVEST_SCRIPT = [
 ].join('\n')
 
 export interface WebPanelGuestOptions {
+  /** Which surface owns this guest: the floating ball or the docked sidebar tab. */
+  surface?: 'ball' | 'sidebar'
   /** Storage identity handed to the Desktop browser host (partition key). */
   workspaceKey: string
   /** Resolves the Host-side token, or undefined when the account is signed out. */
@@ -194,9 +196,17 @@ export class WebPanelGuest {
   async attach(container: HTMLElement, url: string): Promise<void> {
     if (this.disposed) return
     if (this.element !== undefined) {
-      this.pendingUrl = url
-      this.navigate(url)
-      return
+      // The floating window unmounts its container when hidden and remounts it on
+      // reopen. A detached <webview> never paints inside the new container, which
+      // is exactly the sidebar→ball black window. Rebuild it instead of only
+      // navigating an orphaned element.
+      if (this.element.isConnected) {
+        this.pendingUrl = url
+        this.navigate(url)
+        return
+      }
+      await this.teardownElement()
+      if (this.disposed) return
     }
     const bridge = desktopBrowserBridge()
     if (bridge === undefined) {
@@ -223,6 +233,7 @@ export class WebPanelGuest {
     const element = document.createElement('webview') as GuestElement
     element.className = 'dsw-webpanel-webview'
     element.dataset.deepseekWebpanelFrame = 'webview'
+    element.dataset.deepseekWebpanelSurface = this.options.surface ?? 'ball'
     element.setAttribute('name', reservation.lease)
     element.setAttribute('partition', reservation.partition)
     element.setAttribute('allowpopups', '')
@@ -459,9 +470,8 @@ export class WebPanelGuest {
     this.element?.stop()
   }
 
-  async dispose(): Promise<void> {
-    if (this.disposed) return
-    this.disposed = true
+  /** Close and release the current guest without marking this instance disposed. */
+  private async teardownElement(): Promise<void> {
     this.disarmWatchdog()
     this.releaseOpenRequest?.()
     this.releaseOpenRequest = undefined
@@ -474,6 +484,12 @@ export class WebPanelGuest {
     if (bridge !== undefined && lease !== undefined) {
       await bridge.release(lease).catch(() => undefined)
     }
+  }
+
+  async dispose(): Promise<void> {
+    if (this.disposed) return
+    this.disposed = true
+    await this.teardownElement()
     this.update({ ...EMPTY_SNAPSHOT, phase: 'idle' })
   }
 }

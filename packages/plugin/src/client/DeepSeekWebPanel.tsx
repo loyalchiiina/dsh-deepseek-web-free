@@ -3,7 +3,7 @@ import type { PointerEvent as ReactPointerEvent } from 'react'
 import { WEBPANEL_TOKEN_PATH, importTokenFromPanel, pluginFetch } from './api.ts'
 import { WebPanelAuthBanner } from './WebPanelAuthBanner.tsx'
 import type { DeepSeekWebSettingsKey } from './locales.ts'
-import { subscribeWebPanel } from './webpanel-bus.ts'
+import { closeWebPanelSurface, subscribeWebPanel } from './webpanel-bus.ts'
 import { WebPanelGuest } from './webpanel-guest.ts'
 import type { WebPanelSnapshot } from './webpanel-guest.ts'
 import {
@@ -179,10 +179,12 @@ export function DeepSeekWebPanel(props: DeepSeekWebPanelProps): JSX.Element | nu
   const containerRef = useRef<HTMLDivElement>(null)
   const guestRef = useRef<WebPanelGuest>()
   const pendingUrlRef = useRef<string>(WEBPANEL_DEFAULT_URL)
+  const positionRef = useRef(loadPrefs().position)
 
   const ensureGuest = useCallback((): WebPanelGuest => {
     if (guestRef.current === undefined) {
       guestRef.current = new WebPanelGuest({
+        surface: 'ball',
         workspaceKey: WORKSPACE_KEY,
         resolveToken: resolvePanelToken,
         // Reverse sync: a sign-in performed inside the guest becomes the Host
@@ -204,24 +206,45 @@ export function DeepSeekWebPanel(props: DeepSeekWebPanelProps): JSX.Element | nu
     void guest?.dispose()
   }, [])
 
+  // A collapsed window keeps its guest (and its live DeepSeek WebSocket) alive so
+  // reopening is instant. A *fully* unmounted window (position switch / close) must
+  // release it: otherwise the docked tab attaches a second guest to the same session
+  // and the tab's send button stops working.
+  useEffect(() => {
+    if (mounted) return
+    const guest = guestRef.current
+    guestRef.current = undefined
+    void guest?.dispose()
+  }, [mounted])
+
   const show = useCallback((url?: string) => {
     if (url !== undefined && url.length > 0) pendingUrlRef.current = url
     if (loadPrefs().position === 'sidebar' && props.openPanelTab !== undefined) {
       props.openPanelTab(url)
       return
     }
+    // Only one surface may hold the shared DeepSeek session: retire the docked tab
+    // before the floating window comes up.
+    closeWebPanelSurface('sidebar')
     setMounted(true)
     setOpen(true)
   }, [props.openPanelTab])
 
   const toggle = useCallback(() => {
     if (!loadPrefs().enabled) return
+    closeWebPanelSurface('sidebar')
     setMounted(true)
     setOpen(current => !current)
   }, [])
 
   useEffect(() => subscribeWebPanel(request => {
     if (!loadPrefs().enabled) return
+    if (request.close === 'ball') {
+      setMounted(false)
+      setOpen(false)
+      return
+    }
+    if (request.close === 'sidebar') return
     if (request.toggle === true) {
       toggle()
       return
@@ -236,6 +259,18 @@ export function DeepSeekWebPanel(props: DeepSeekWebPanelProps): JSX.Element | nu
     setWinOffset(next.winOffset)
     setWinSizeState(next.winSize)
     if (!next.enabled) setOpen(false)
+    // Switching surfaces must retire the other one first: both guests share one
+    // DeepSeek storage partition, and leaving the docked tab attached makes the
+    // floating window come up black / wedged.
+    if (next.position !== positionRef.current) {
+      positionRef.current = next.position
+      if (next.position === 'ball') {
+        closeWebPanelSurface('sidebar')
+      } else {
+        setMounted(false)
+        setOpen(false)
+      }
+    }
   }), [])
 
   // Ctrl+Shift+D toggles; Esc closes. The host lives in shell.overlay, so a plain
@@ -411,7 +446,13 @@ export function DeepSeekWebPanel(props: DeepSeekWebPanelProps): JSX.Element | nu
             top: winPos.y,
             width: size.width,
             height: size.height,
-            display: open ? 'flex' : 'none',
+            // Keep the window in the render tree while closed. `display:none` makes
+            // Electron stop compositing the <webview>, and showing it again then
+            // leaves a blank/black window (the "freeze" users see). Visibility
+            // hides it without tearing the guest's paint surface down.
+            display: 'flex',
+            visibility: open ? 'visible' : 'hidden',
+            pointerEvents: open ? 'auto' : 'none',
           }}
           role="dialog"
           aria-label={t('panelTitle')}

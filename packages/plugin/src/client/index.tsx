@@ -29,6 +29,7 @@ import {
 } from './slot-ids.ts'
 import { openHarnessSession } from './wait-for-session.ts'
 import { openWebPanel } from './webpanel-bus.ts'
+import { registerSelectionActions } from './selection-actions.ts'
 import type { WorkspaceChoice } from './WorkspaceForkPopover.tsx'
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {
@@ -38,7 +39,7 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 }
 
 export const name = 'dsh-deepseek-web-client'
-export const inject = ['slots', 'locale', 'sessions', 'workspaces', 'sidebarRight', 'sidebarRightTabs']
+export const inject = ['slots', 'locale', 'sessions', 'workspaces', 'sidebarRight', 'sidebarRightTabs', 'uiConversation']
 
 function workspaceChoices(workspaces: HarnessWorkspacesLike | undefined): WorkspaceChoice[] {
   const items = workspaces?.list?.getSnapshot()?.items ?? []
@@ -124,4 +125,6 @@ export function apply(ctx: ClientContext): void {
     locale: namespace,
     inject: (): DeepSeekWebPanelTabInjected => ({ t, openFloatPanel: openWebPanel }),
   }, DeepSeekWebPanelTab))
+
+  registerSelectionActions(ctx)
 }

@@ -1,3 +1,17 @@
+## 1.0.34
+
+新增：对话中选中文字右键菜单（纯客户端）。
+- 选中会话文字后右键，用「复制 + 复制到 DeepSeek 网页」这一份菜单替换宿主原生只含「复制」的单菜单。宿主原生菜单由 Electron 主进程构建、插件无法追加，故以 `preventDefault()` 抑制它，并渲染同款浅色（Windows 11 风格）菜单，格式与官方一致。
+- **复制**：把选中文字写入剪贴板（保留官方能力）。
+- **复制到 DeepSeek 网页**：按你在网页面板设置里选的位置自动打开对应界面（悬浮球 → 自动展开悬浮球窗口，即使窗口处于收起/隐藏但 webview 仍挂载也会展开；侧边栏 → 打开/展开侧边栏标签页），等页面就绪后**先清空 DeepSeek 输入框、再放入选中文字**（不追加）；打开时自动快速关闭 DeepSeek 页面的风险提示弹窗（加载后立即点一次关闭，并以 150ms 节奏继续观察 8 秒）。
+- **修复悬浮球白屏/卡死**：悬浮球窗口关闭时不再用 `display:none`（Electron 会停止合成 `<webview>`，重新打开就是黑屏/卡死），改为 `visibility:hidden + pointer-events:none` 保持绘制；悬浮球与侧边栏仍可同时打开，写入时按 webview 的 `data-deepseek-webpanel-surface` 精确投递到目标界面。
+- **修复侧边栏发送失效**：悬浮球窗口完全卸载/切换位置时释放它的 guest（不再只隐藏），避免悬浮球与侧边栏两个 guest 同时占同一 DeepSeek 会话导致侧栏 WebSocket/发送异常；写入 DeepSeek 输入框改用 React 原生 value setter + `input` 事件（不再派发 `change`），保证发送按钮状态同步。
+- **修复切回悬浮球黑屏（根因）**：悬浮球窗口 unmount 后，旧 `<webview>` 元素已脱离 DOM；旧 `attach()` 看到 element 存在就只 navigate、不重新挂载 → 新容器里没有 webview → 黑屏。现在 `attach()` 检测到元素已脱离 DOM 时会先 `teardownElement()`（关闭 guest、释放 lease、移除元素）再重建一个全新 webview，保证切回悬浮球能正常显示。
+- **切换位置（侧边栏 ↔ 悬浮球）先退后开**：切到悬浮球时先关闭侧边栏 DeepSeek 标签页（释放共享会话）再打开悬浮球；切到侧边栏时先卸载悬浮球 guest 再开标签页；复制流程打开目标面前也会先关另一面并留 200ms 释放时间。避免第二个界面黑屏/卡死。
+- 移除上一版「复制到输入框」：官方「引用文本」已能把选中文字送进输入框。
+- 实现：宿主官方扩展点 `uiConversation.interactions` + `conversation.chat.text-interaction` keyed Slot，id 与 slot key 均为 `deepseek-web-selection-copy`；客户端 `inject` 增加 `uiConversation`。
+- 生效方式：仅改 `lib/client.js`，**Ctrl+Shift+R 硬刷新**即可（宿主端未改，无需整体重启）。
+
 ## 1.0.33
 
 修复 1.0.32 并未真正消除的 CI 失败（不改运行逻辑）：
