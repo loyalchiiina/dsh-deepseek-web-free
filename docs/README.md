@@ -32,7 +32,7 @@
 | GitHub | `y-wi/dsh-deepseek-web` | `loyalchiiina/dsh-deepseek-web-free` |
 | 基线版本 | 1.0.3 | 1.0.3 起 fork，当前见 [CHANGELOG](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/CHANGELOG.md) |
 | `provider` id | `deepseek-web` | `deepseek-web`（**不变**） |
-| 模型 id | `default` / `expert` | `default` / `expert`（**不变**） |
+| 模型 id | `default`（历史配置里的 `expert` 自动归一） | `default`（1.0.31 起不再提供独立 Expert） |
 | 浏览器 profile 目录 | `browser-profiles/dsh-deepseek-web` | **同名不变**（改名会丢登录态） |
 | `cordis.patch.yml` 条目 | `id: llm-deepseek-web` + `id: deepseek-web-tui`（两条 insert） | 只有 `id: llm-deepseek-web-free` 一条，**缺 TUI 条目**（见下文第 8 条） |
 | 默认模型覆盖 | 含 `- id: agent-default-model` | **同样含**（原样承袭，非本 fork 新增） |
@@ -60,7 +60,7 @@ dsh plugin --profile web peers check
 dsh web
 ```
 
-设置 → DeepSeek Web → Sign in with DeepSeek。确认 Provider `deepseek-web` 出现，模型 `default` / `expert` 可见。
+设置 → DeepSeek Web → Sign in with DeepSeek。确认 Provider `deepseek-web` 出现，模型 `default` 可见（1.0.31 起不再提供独立 Expert）。
 
 DSH / Cordis / React 由运行时 `$DSH_HOME/profiles/node_modules` 提供，不会在插件目录再装一份。
 
@@ -105,7 +105,7 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 <tr>
 <td>
 <img src="https://raw.githubusercontent.com/loyalchiiina/dsh-deepseek-web-free/main/docs/assets/showcase-switch.gif" alt="在输入栏切换 DeepSeek Web 模型与 DeepThink 推理等级" width="720">
-<p><b>切换模型。</b> 可在 <code>DeepSeek Web</code> 与 <code>DeepSeek Web Expert</code> 之间切换，并选择 DeepThink 推理等级。底部显示当轮耗时与首 token 延迟。</p>
+<p><b>切换模型。</b> 在 <code>DeepSeek Web</code> 内选择 DeepThink 推理等级。底部显示当轮耗时与首 token 延迟。</p>
 </td>
 </tr>
 <tr>
@@ -137,10 +137,20 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 | 能力 | 说明 |
 | --- | --- |
 | DSH 原生工具 | 将 DeepSeek 网页端接入 Harness；插件把模型输出转成工具请求。FS / Shell / MCP / 审批由 Harness 执行 |
-| 网页搜索 | 始终开启官方网页端 Web Search；Expert 不能搜；不是 DSH `web_search` |
+| 网页搜索 | 始终开启官方网页端 Web Search；不是 DSH `web_search` |
 | 预构建 WASM | 安装无需 Rust / wasm-pack；token 与 cookie **不进入** WASM |
 
 详见 [remote-sessions.md](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/docs/remote-sessions.md)。
+
+## 网页面板（侧边栏 / 悬浮球）与右键复制（1.0.34 起）
+
+插件还能把 `chat.deepseek.com` 直接嵌进 DSH：右侧栏标签页，或可拖动/可拉伸的鲸鱼悬浮球窗口；登录一次双向同步。
+
+- **选中文字右键**：会话里选中文字后右键，菜单为「复制 + 复制到 DeepSeek 网页」；后者按设置里的位置偏好自动打开悬浮球或侧边栏，先清空 DeepSeek 输入框再写入，并自动关掉风险提示弹窗。
+- ▶ [观看效果视频（MP4）](https://github.com/loyalchiiina/dsh-deepseek-web-free/releases/download/v1.0.35/right-click-copy-to-deepseek.mp4)
+- 同一时刻只保留一个网页面板 webview；切换位置先退后开，避免两个 guest 抢同一 DeepSeek 会话导致白屏/发不出去。
+
+详见根 README 的「网页面板」「选中文字右键菜单」「只有一个 webview 活着」三节。
 
 ## 架构
 
@@ -156,9 +166,8 @@ DeepSeek Web 没有官方 function calling。插件只解析模型输出；适�
 | ID | 说明 |
 | --- | --- |
 | `deepseek-web/default` | DeepSeek Web |
-| `deepseek-web/expert` | DeepSeek Web Expert |
 
-思考为 `on` / `off`（默认 `on`）。网页原生搜索跟随官方 Web Search 开关。`default` 的每一轮（含续写和 `/clean`）都会打开，插件设置里不能关掉。Expert 在协议上不能搜索。引用来源会出现在时间线上；不会注册 DSH `web_search` 提供方。输入模态目前为**纯文本**——传 `ImageBlock` 会直接抛错，不会静默丢弃。
+思考为 `on` / `off`（默认 `on`）。网页原生搜索始终开启（跟随官方 Web Search）；`default` 的每一轮（含续写和 `/clean`）都会打开，插件设置里不能关掉。引用来源会出现在时间线上；不会注册 DSH `web_search` 提供方。输入模态为**文本 + 图片**（1.0.31 起）：支持 PNG / JPEG / WebP / GIF，单张上限 5 MB。
 
 ## 命令
 

@@ -59,7 +59,7 @@ dsh plugin --profile web peers check
 dsh web
 ```
 
-然后到 **设置 → DeepSeek Web → Sign in with DeepSeek**。确认 Provider `deepseek-web` 出现，模型 `default` / `expert` 可见。
+然后到 **设置 → DeepSeek Web → Sign in with DeepSeek**。确认 Provider `deepseek-web` 出现，模型 `default` 可见（1.0.31 起不再提供独立的 Expert 模型；历史配置里的 `expert` 会自动归一到 `default`）。
 
 DSH / Cordis / React 由运行时 `$DSH_HOME/profiles/node_modules` 提供，不会在插件目录再装一份。
 
@@ -149,10 +149,11 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 | 能力 | 说明 |
 | --- | --- |
 | DSH 原生工具 | 将 DeepSeek 网页端接入 Harness；插件把模型输出转成工具请求。FS / Shell / MCP / 审批由 Harness 执行 |
-| 网页搜索 | 始终开启官方网页端 Web Search；Expert 不能搜；不是 DSH `web_search` |
+| 网页搜索 | 始终开启官方网页端 Web Search；不是 DSH `web_search` |
 | 预构建 WASM | 安装无需 Rust / wasm-pack；token 与 cookie **不进入** WASM |
 | 网页面板 | 在 DSH 界面内以侧边栏 tab 或鲸鱼悬浮球直接打开 `chat.deepseek.com`；登录态由 Host 侧凭据自动注入，免二次登录 |
 | 图片输入 | 直接在 DSH 发图，插件读取图片经网页端 `upload_file` 上传、`fetch_files` 轮询就绪，随消息以 `ref_file_ids` 发送，由 DeepSeek 完成识图并回传；支持 PNG / JPEG / WebP / GIF，单张上限 5 MB |
+| 选中文字右键 | 会话里选中文字后右键，菜单多出「复制」与「复制到 DeepSeek 网页」；按位置偏好自动打开悬浮球或侧边栏，先清空 DeepSeek 输入框再写入，并自动关掉风险提示弹窗 |
 
 详见 [docs/remote-sessions.md](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/docs/remote-sessions.md)。
 
@@ -166,7 +167,7 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 | 悬浮球 | 屏幕上常驻一颗可拖动的鲸鱼圆球，点开是默认 420×640 的小窗口，右缘/下缘/右下角可拉伸调宽高（最小 320×420），尺寸自动记忆 | 点窗口 ✕、再点一次鲸鱼球，或按 Esc |
 
 - 打开：`Ctrl/Cmd+Shift+D`、侧栏底部「网页面板」开关按钮（按「位置」分派；悬浮球位置下再点一次即收起），或设置页「立即打开面板」。
-- 免登录：面板加载真实 `chat.deepseek.com`，Host 侧把已保存的凭据通过 `GET /plugins/dsh-deepseek-web-free/webpanel/token` 注入到页面存储，因此每次都是已登录状态。
+- 免登录：面板加载真实 `chat.deepseek.com`，Host 侧把已保存的凭据通过 `GET /plugins/dsh-deepseek-web/webpanel/token` 注入到页面存储，因此每次都是已登录状态。
 - 平台：两种形态都需要 DSH 桌面端（Electron webview）；浏览器版 DSH 只显示提示。
 
 
@@ -190,12 +191,32 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 | 标题栏 ← / → | 后退 / 前进 |
 | 标题栏刷新 | 刷新（加载中变「停止」） |
 | 标题栏「在系统浏览器打开」 | 交给系统默认浏览器 |
-| 关闭窗口 | 只隐藏不卸载，网页状态与草稿保留 |
+| 关闭窗口 | 只隐藏不卸载（`visibility:hidden`，不用 `display:none`，否则 Electron 停合成 → 再开黑屏），网页状态与草稿保留；切换位置或关闭面板时才释放 guest |
 | 鲸鱼图标 | 官方 DeepSeek 标志，`currentColor` 上色：浅色主题黑、深色主题白 |
+
+### 选中文字右键菜单（1.0.34 起，纯客户端）
+
+在会话消息里选中文字后右键，弹出的不再是宿主原生那条只有「复制」的系统菜单，而是插件渲染的同款浅色菜单（Windows 11 风格，8px 圆角 / 32px 行高），两项：
+
+- **复制**：写入系统剪贴板，提示「已复制」。
+- **复制到 DeepSeek 网页**：按 设置 → DeepSeek Web → 网页面板 → 位置 打开对应界面，等页面就绪后把选中文字**清空式写入** DeepSeek 输入框（不追加）。
+
+▶ **[观看效果视频：选中文字 → 右键 → 复制到 DeepSeek 网页（MP4）](https://github.com/loyalchiiina/dsh-deepseek-web-free/releases/download/v1.0.35/right-click-copy-to-deepseek.mp4)**
+
+细节：位置=悬浮球 → 自动展开悬浮球窗口（窗口收起/隐藏但 webview 仍挂载也会展开）；位置=侧边栏 → 打开/切到侧边栏 DeepSeek 标签页（已在则不重复开）；打开前先让另一面退出并留 200ms 释放共享会话；会顺手点掉 DeepSeek 风险提示弹窗（加载后立即点一次，再以 150ms 节奏观察 8 秒）；结果提示：成功「已复制到 DeepSeek 网页输入框」，22 秒内没等到页面就绪「打开 DeepSeek 网页超时，请先手动打开面板再试」，写入失败自动回退剪贴板并提示 Ctrl+V。只在**有选中文字**时接管右键，未选中时右键行为不变。
+
+### 只有一个 webview 活着（切换与重挂）
+
+侧边栏标签页与悬浮球共用同一 DeepSeek 存储分区，两个 guest 同时挂载会让后起的那个白屏/卡死，也会让侧边栏发送按钮失灵。因此：
+
+- **先退后开**：切到悬浮球先关侧边栏 DeepSeek 标签页（释放共享会话）再开球；切到侧边栏先卸载悬浮球 guest 再开 tab；复制到网页前的自动打开同样先关另一面并留 200ms。
+- **隐藏 ≠ 卸载**：点 ✕ / Esc / 再点一次鲸鱼球只是 `visibility:hidden`（保留绘制、网页状态与草稿），不用 `display:none`（Electron 会停止合成 `<webview>`，再开即黑屏/卡死）。
+- **重挂重建**：窗口被完全卸载（切换位置、关闭面板）后再开，旧 `<webview>` 已脱离 DOM；插件检测到元素不在文档上会先释放 guest 再新建 webview，而不是对旧元素 navigate。
+- **发送修复**：写入输入框用 React 原生 value setter + `input` 事件（不派发 `change`），保证发送按钮状态同步；切换位置时释放旧 guest，避免两个 guest 抢同一会话导致侧栏 WebSocket/发送异常。
 
 ### 免登录是怎么做的
 
-插件把已保存的 DeepSeek 账号 token 通过同源路由 `GET /plugins/dsh-deepseek-web-free/webpanel/token` 交给渲染进程，面板在自己的 guest 分区里把 token 写进 `localStorage.userToken` 然后刷新页面——网页自己完成登录，PoW、WebSocket、API 全部在页面内原生跑，**不需要在面板里再登录一次，也不走任何本地反代**。
+插件把已保存的 DeepSeek 账号 token 通过同源路由 `GET /plugins/dsh-deepseek-web/webpanel/token` 交给渲染进程，面板在自己的 guest 分区里把 token 写进 `localStorage.userToken` 然后刷新页面——网页自己完成登录，PoW、WebSocket、API 全部在页面内原生跑，**不需要在面板里再登录一次，也不走任何本地反代**。
 
 > token 只在 Host 与 DSH 渲染进程之间传递，不落盘、不出现在页面 URL 里；路由受 `trustedPluginRequest` 保护（仅 loopback + 同源）。
 
@@ -214,14 +235,13 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 
 ### 与既有能力共存
 
-原有功能全部保留、互不影响：provider `deepseek-web` 的模型列表（`default` / `expert`）、DeepThink 思考开关、网页搜索、侧栏会话接续、派生到工作区、隔离浏览器登录与 profile。
+原有功能全部保留、互不影响：provider `deepseek-web` 的模型列表（`default`）、DeepThink 思考开关、网页搜索、侧栏会话接续、派生到工作区、隔离浏览器登录与 profile。
 
 ## 模型
 
 | ID | 名称 | 输入模态 | 网页原生搜索 |
 | --- | --- | --- | --- |
 | `deepseek-web/default` | DeepSeek Web | 文本 + 图片 | 每轮开启 |
-| `deepseek-web/expert` | DeepSeek Web Expert | 文本 + 图片 | 不开启（协议上不能搜） |
 
 思考为 `on` / `off`（默认 `on`）。`default` 的每一轮（含续写和 `/clean`）都会打开网页搜索，插件设置里关不掉。引用来源会出现在时间线上；不会注册 DSH `web_search` 提供方。
 
@@ -268,7 +288,7 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 | 字段 | 类型 / 取值 | 默认 | 说明 |
 | --- | --- | --- | --- |
 | `tokenEnv` | 字符串（`.role("credential-ref")`） | `DEEPSEEK_WEB_TOKEN` | 到 DSH 凭证存储里取 token 用的键名 |
-| `defaultModel` | `default` \| `expert` | `default` | 新建会话用哪个模型 |
+| `defaultModel` | `default`（历史配置里的 `expert` 自动归一到 `default`） | `default` | 新建会话用哪个模型 |
 | `thinking` | `enabled` \| `disabled` | `enabled` | DeepThink 推理 |
 | `streamIdleTimeoutMs` | 数字 | `180000` | SSE 空闲超时（毫秒） |
 | `maxToolProtocolBytes` | 数字 | `131072` | 单次工具协议块字节上限 |
@@ -320,7 +340,7 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 | TypeScript 开源层 | HTTP、SSE、浏览器登录、凭证、DSH 适配器、工具桥、回放 |
 | 预编译 WASM 核心 | 协议兼容与 PoW |
 
-宿主侧 HTTP 路由挂在 `/plugins/dsh-deepseek-web-free/` 前缀下（`auth/login`、`auth/logout`、`auth/cancel`、`auth/status`、`doctor`、`account`、`fork`、`sessions`）。这些是插件内部路由，不构成对外 API。
+宿主侧 HTTP 路由挂在 `/plugins/dsh-deepseek-web/` 前缀下（`auth/login`、`auth/logout`、`auth/cancel`、`auth/status`、`doctor`、`account`、`fork`、`sessions`）。这些是插件内部路由，不构成对外 API。
 
 ## 安全
 
@@ -350,7 +370,7 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 >
 > 1.0.11 的「网页面板」源码写在 `packages/plugin/src/client/`（`DeepSeekWebPanel.tsx` / `webpanel-guest.ts` / `webpanel-bus.ts` / `webpanel-prefs.ts` 及若干改动文件），但**仍然手工移植进 `lib/client.js`、`lib/index.js` 后发布**，没有走 `pnpm build` 覆盖 —— 原因同上：`pnpm build` 出来的产物缺 1.0.4–1.0.10 的手改修复、且包名不带 `-free`。
 
-> ⚠️ 本机开发副本 `~/.dsh/local-plugins/dsh-deepseek-web-free` 只保留上表第一行的发布子集，不含 `packages/` `tests/` `scripts/` `LICENSES/` 等开发目录 —— 那是正常的，不是文件丢失。
+> ⚠️ 本机开发副本 `~/.dsh/local-plugins/dsh-deepseek-web` 只保留上表第一行的发布子集，不含 `packages/` `tests/` `scripts/` `LICENSES/` 等开发目录 —— 那是正常的，不是文件丢失。
 
 ## 与上游的差异（本插件维护者新增）
 

@@ -1,3 +1,11 @@
+## 1.0.35
+
+纯文档/资产版（不改运行代码，功能与 1.0.34 一致）：
+- **README / docs 更新**：新增「选中文字右键菜单（1.0.34 起）」与「只有一个 webview 活着（切换与重挂）」两节；补充效果视频链接；修正「关闭窗口」为 `visibility:hidden` 描述；修正 `/plugins/dsh-deepseek-web` 路由前缀；移除已废弃的 Expert 模型说明（1.0.31 起不再提供独立 Expert，历史配置自动归一）。
+- **效果视频**：`right-click-copy-to-deepseek.mp4`（13.9 MB）作为 v1.0.35 Release 资产，README 链接引用；现有截图全部保留。
+- **插件市场描述**：awesome-dsh-plugin 条目 description（en/zh）追加「右键复制到 DeepSeek 网页」能力（PR）。
+- 运行代码（`lib/*.js`、`wasm`）无改动。
+
 ## 1.0.34
 
 新增：对话中选中文字右键菜单（纯客户端）。
