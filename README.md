@@ -2,6 +2,11 @@
 
 # dsh-deepseek-web-free
 
+> **功能描述**：把 DeepSeek 网页版桥接进 DSH：不花 API 额度就能跑短上下文对话、工作流与技能包，直接发图片也能免费识图。带悬浮球与侧边栏，一键登录后长期保持登录；正文任意文字右键即可投送到网页端输入框，投送前自动清空原输入框，不用再扫码、跳转、复制粘贴。适配 DSH 内核 0.2.2-rc.1。
+>
+> **English**: Bridges the DeepSeek web client into DSH, so short-context conversations, workflows and skill packs run without an API key, and a picture pasted in DSH gets read for free. Ships a floating ball plus sidebar, one-click login that stays logged in, and a right-click action that sends any selected text into the web input after clearing it, so no more QR scanning, tab switching or manual pasting. Adapts DSH kernel 0.2.2-rc.1.
+
+
 **把 DeepSeek 网页端接入 DeepSeek Harness，并在对话界面内嵌网页面板 —— `y-wi/dsh-deepseek-web` 的 fork**
 
 [English](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/docs/README.en.md) · [安装](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/docs/INSTALL.md) · [npm](https://www.npmjs.com/package/dsh-deepseek-web-free) · [CHANGELOG](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/CHANGELOG.md)
