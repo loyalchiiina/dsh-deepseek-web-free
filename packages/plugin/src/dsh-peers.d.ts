@@ -215,7 +215,7 @@ declare module '@deepseek-ai/dsh-client-ui-primitives' {
     label: string
     side?: 'top' | 'right' | 'bottom' | 'left'
   }): JSX.Element
-  export function IconFolderOpenOutline16(props?: { size?: number; className?: string }): JSX.Element
+  export function IconFolderOpenOutlineRegular(props?: { size?: number; className?: string }): JSX.Element
   export function IconQueueOutline14(props?: { size?: number; className?: string }): JSX.Element
   export function IconQueueOutlineRegular(props?: { size?: number; className?: string }): JSX.Element
   export function IconRefreshOutline16(props?: { size?: number; className?: string }): JSX.Element

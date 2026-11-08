@@ -1,7 +1,7 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, KeyboardEvent } from 'react'
 import {
-  IconFolderOpenOutline16,
+  IconFolderOpenOutlineRegular,
   Tooltip,
   useDismissOnOutsidePointer,
 } from '@deepseek-ai/dsh-client-ui-primitives'
@@ -174,7 +174,7 @@ export function ForkToWorkspaceAction(props: ForkToWorkspaceActionProps): JSX.El
             else void onOpen()
           }}
         >
-          <IconFolderOpenOutline16 />
+          <IconFolderOpenOutlineRegular />
         </button>
       </Tooltip>
       {open && placement !== undefined ? (

@@ -10,7 +10,7 @@ export function Tooltip(props: { children?: unknown }): unknown {
   return props.children ?? null
 }
 
-export function IconFolderOpenOutline16(): null {
+export function IconFolderOpenOutlineRegular(): null {
   return null
 }
 

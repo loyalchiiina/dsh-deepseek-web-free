@@ -1,3 +1,10 @@
+## 1.0.36
+
+修复版（运行代码修复，功能与 1.0.35 一致）：
+- **修复新内核下客户端挂载报错**：`ForkToWorkspaceAction` 使用的 `IconFolderOpenOutline16` 在当前内核（0.2.2-rc.1）的 `@deepseek-ai/dsh-client-ui-primitives` 中已不再导出，图标为 `undefined` 时 React 渲染「复制到 DeepSeek 网页」按钮会抛错；改用仍导出的 `IconFolderOpenOutlineRegular`（同为文件夹图标），并同步 `dsh-peers.d.ts` 类型声明与测试 stub。
+- 重建 `lib/client.js` 构建产物。
+- ⚠️ npm/GitHub 上的 1.0.35 在 0.2.2-rc.1 内核上不可用，请升级到 1.0.36。
+
 ## 1.0.35
 
 纯文档/资产版（不改运行代码，功能与 1.0.34 一致）：
