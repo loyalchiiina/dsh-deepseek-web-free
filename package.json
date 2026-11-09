@@ -58,7 +58,9 @@
     "LICENSE",
     "CHANGELOG.md",
     "docs/README.md",
-    "locale/*.json"
+    "locale/*.json",
+    "docs/assets/**",
+    "screenshots.json"
   ],
   "dsh": {
     "plugin": true,
