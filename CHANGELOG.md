@@ -1,3 +1,9 @@
+## 1.0.37
+
+纯元数据版（不改运行代码，功能与 1.0.36 一致）：
+- **插件市场元数据**：新增 `locale/en.json`、`locale/zh.json`（显示名 DeepSeek Web Provider / DeepSeek 网页提供方 + 一句话功能描述）；`package.json` 的 `exports` 与 `files` 白名单补上 `locale/*.json`，确保 npm 包内包含 locale 文件。
+- 运行代码（`lib/*.js`、`wasm`）无改动。
+
 ## 1.0.36
 
 修复版（运行代码修复，功能与 1.0.35 一致）：

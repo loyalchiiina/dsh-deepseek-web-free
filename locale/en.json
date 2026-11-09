@@ -1,0 +1,7 @@
+{
+  "name": "dsh-deepseek-web-free",
+  "meta": {
+    "title": "DeepSeek Web Provider",
+    "description": "v1.0.37 · Unofficial DeepSeek Web plugin: use chat.deepseek.com as a model source and chat inside the embedded page (sidebar tab or whale floating window) after a single sign-in; right-click selected text to copy it into the web composer."
+  }
+}

@@ -1,7 +1,7 @@
 {
   "name": "dsh-deepseek-web-free",
   "description": "Unofficial DeepSeek Web provider for DeepSeek Harness: use chat.deepseek.com as an LLM source AND embed the DeepSeek web page inside DSH (right sidebar tab or draggable whale floating window) with one-time sign-in. Select conversation text and right-click to copy it straight into the embedded DeepSeek composer. 非官方 DeepSeek 网页端插件：既能把网页端当模型用，也能在 DSH 内嵌网页面板直接对话（侧栏标签页 / 鲸鱼悬浮球），登录一次双向同步；选中会话文字右键即可把内容复制到 DeepSeek 网页输入框。仅供个人方便使用，可能存在账号风险，作者不承担责任。",
-  "version": "1.0.36",
+  "version": "1.0.37",
   "keywords": [
     "dsh",
     "dsh-plugin",
@@ -45,7 +45,8 @@
     },
     "./client": "./lib/client.js",
     "./cordis.patch.yml": "./cordis.patch.yml",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
   },
   "files": [
     "lib/*.js",
@@ -56,7 +57,8 @@
     "README.md",
     "LICENSE",
     "CHANGELOG.md",
-    "docs/README.md"
+    "docs/README.md",
+    "locale/*.json"
   ],
   "dsh": {
     "plugin": true,

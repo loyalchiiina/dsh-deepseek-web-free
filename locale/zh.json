@@ -1,0 +1,7 @@
+{
+  "name": "dsh-deepseek-web-free",
+  "meta": {
+    "title": "DeepSeek 网页提供方",
+    "description": "v1.0.37 · 非官方 DeepSeek 网页端插件：既能把网页端当模型用，也能在 DSH 内嵌网页面板直接对话（侧栏标签页 / 鲸鱼悬浮球），登录一次双向同步，选中会话文字右键即可复制进网页输入框。"
+  }
+}
