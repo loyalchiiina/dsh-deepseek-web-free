@@ -127,25 +127,25 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 <table>
 <tr>
 <td>
-<img src="docs/assets/showcase-panel.png" alt="网页面板嵌在 DSH 右侧栏，与对话左右并列" width="430">
+<img src="https://raw.githubusercontent.com/loyalchiiina/dsh-deepseek-web-free/main/docs/assets/showcase-panel.png" alt="网页面板嵌在 DSH 右侧栏，与对话左右并列" width="430">
 <p><b>网页面板（侧边栏）。</b> 在 DSH 右侧栏直接打开真实的 <code>chat.deepseek.com</code>，与对话左右并列、互不遮挡；也可切换成悬浮球。</p>
 </td>
 </tr>
 <tr>
 <td>
-<img src="docs/assets/showcase-panel-chat.png" alt="在面板内对话并搜索切换模型" width="720">
+<img src="https://raw.githubusercontent.com/loyalchiiina/dsh-deepseek-web-free/main/docs/assets/showcase-panel-chat.png" alt="在面板内对话并搜索切换模型" width="720">
 <p><b>面板内对话 + 换模型。</b> 在面板里直接与 DeepSeek 对话，还能搜索并切换模型 / 分组。底部保留网页端原生的「深度思考」「智能搜索」开关。</p>
 </td>
 </tr>
 <tr>
 <td>
-<img src="docs/assets/showcase-panel-toggle.png" alt="网页面板位置：悬浮球或侧边栏" width="582">
+<img src="https://raw.githubusercontent.com/loyalchiiina/dsh-deepseek-web-free/main/docs/assets/showcase-panel-toggle.png" alt="网页面板位置：悬浮球或侧边栏" width="582">
 <p><b>位置切换。</b> 悬浮球（可拖动、可拉伸的鲸鱼窗口）/ 侧边栏，一键切换。</p>
 </td>
 </tr>
 <tr>
 <td>
-<img src="docs/assets/showcase-panel-settings.png" alt="DeepSeek Web 设置页：登录、诊断、网页面板" width="470">
+<img src="https://raw.githubusercontent.com/loyalchiiina/dsh-deepseek-web-free/main/docs/assets/showcase-panel-settings.png" alt="DeepSeek Web 设置页：登录、诊断、网页面板" width="470">
 <p><b>设置页。</b> 隔离浏览器登录（一次登录长期有效）、诊断、启用网页面板、选择位置、立即打开。</p>
 </td>
 </tr>

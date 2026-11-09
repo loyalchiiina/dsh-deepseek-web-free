@@ -1,3 +1,10 @@
+## 1.0.38
+
+资产／文档版（不改运行代码，功能与 1.0.37 一致）：
+- **npm 包内补图**：`files` 白名单补 `screenshots.json` 与 `docs/assets/**`（4 张截图）。此前白名单漏掉这两项，GitHub 上有图、装 npm 包后本地无图，插件市场也取不到 `screenshots.json` 的卡片图。
+- **README 图片改绝对地址**：`README.md` 里 4 条 `<img src="docs/assets/showcase-panel*.png">` 相对引用改为 `https://raw.githubusercontent.com/loyalchiiina/dsh-deepseek-web-free/main/docs/assets/...png` 绝对地址，避免 npm 页面（与仓库外渲染场景）裂图；4 条均 HTTP 200 校验通过。
+- `lib/*.js`、`wasm`、`cordis.patch.yml` 均未改动。
+
 ## 1.0.37
 
 纯元数据版（不改运行代码，功能与 1.0.36 一致）：
