@@ -24,7 +24,10 @@ export interface DeepSeekWebPanelInjected {
 export type DeepSeekWebPanelProps = Partial<DeepSeekWebPanelInjected>
 
 const PANEL_CSS_ID = 'dsh-deepseek-web/webpanel'
-const BALL_SIZE = 52
+// 悬浮球尺寸：与 dsh-skill-browser 的球保持同尺寸（34×34，实测而非估算），
+// 见 dsh-config 插件开发 SKILL §7.30「和某插件保持一致必须测量实物」。
+// 改这里时 CSS 的 width/height 必须同步（下方 .dsw-webpanel-ball），图标尺寸同步 WHALE_ICON。
+const BALL_SIZE = 34
 const BALL_MARGIN = 12
 const WIN_WIDTH = 420
 const WIN_HEIGHT = 640
@@ -35,10 +38,14 @@ const DRAG_THRESHOLD = 4
 const PANEL_CSS = [
   // The host never eats clicks: DSH stays fully usable around the ball and window.
   '.dsw-webpanel-host{position:fixed;inset:0;z-index:1200;pointer-events:none}',
-  '.dsw-webpanel-ball{position:fixed;width:52px;height:52px;padding:0;border-radius:50%;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-base);color:var(--dsw-alias-label-primary);box-shadow:0 6px 20px rgba(0,0,0,.18);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;pointer-events:auto;touch-action:none;user-select:none;transition:transform .12s ease,box-shadow .12s ease}',
+  '.dsw-webpanel-ball{position:fixed;--dsw-ball:34px;width:var(--dsw-ball);height:var(--dsw-ball);padding:0;border-radius:50%;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-base);color:var(--dsw-alias-label-primary);box-shadow:0 6px 20px rgba(0,0,0,.18);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;pointer-events:auto;touch-action:none;user-select:none;transition:transform .12s ease,box-shadow .12s ease}',
   '.dsw-webpanel-ball:hover{transform:translateY(-1px) scale(1.03);box-shadow:0 10px 26px rgba(0,0,0,.24)}',
   '.dsw-webpanel-ball:active{transform:scale(.97)}',
   '.dsw-webpanel-ball-icon{display:inline-flex;align-items:center;justify-content:center;pointer-events:none}',
+  // 图标不写死像素（2026-11-12 用户口径：各插件图标大小必须自适应，不许逐个拍 px）：
+  // 球内图标 = 球径 × 0.65，由 --dsw-ball 单一变量派生（球改尺寸只需改 --dsw-ball，图标自动跟）；
+  // 行内按钮图标 = 1.15~1.25em 跟随字号。比例档见 dsh-plugin-ui-design 技能。
+  '.dsw-webpanel-ball-icon svg{width:calc(var(--dsw-ball) * .65);height:calc(var(--dsw-ball) * .65);display:block}',
   '.dsw-webpanel-win{position:fixed;pointer-events:auto;display:flex;flex-direction:column;overflow:hidden;border-radius:14px;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-base);box-shadow:0 18px 48px rgba(0,0,0,.28);animation:dsw-webpanel-in .16s ease-out}',
   '@keyframes dsw-webpanel-in{from{transform:translateY(8px) scale(.985);opacity:.4}to{transform:none;opacity:1}}',
   '.dsw-webpanel-rz{position:absolute;z-index:3;touch-action:none}',
@@ -48,7 +55,9 @@ const PANEL_CSS = [
   '.dsw-webpanel-tab{display:flex;flex-direction:column;flex:1;min-height:0;height:100%;background:var(--dsw-alias-bg-base)}',
   '.dsw-webpanel-head{flex:none;display:flex;align-items:center;height:44px;gap:6px;padding:0 8px;border-bottom:1px solid var(--dsw-alias-border-l2);cursor:move;user-select:none;touch-action:none}',
   '.dsw-webpanel-head button,.dsw-webpanel-head input{cursor:auto}',
-  '.dsw-webpanel-iconbtn{flex:none;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--dsw-alias-label-secondary);cursor:pointer;transition:background .12s ease,color .12s ease;overflow:hidden}',
+  '.dsw-webpanel-iconbtn{flex:none;display:inline-flex;align-items:center;justify-content:center;--dsw-iconbtn:28px;width:var(--dsw-iconbtn);height:var(--dsw-iconbtn);padding:0;border:0;border-radius:8px;background:transparent;color:var(--dsw-alias-label-secondary);cursor:pointer;transition:background .12s ease,color .12s ease;overflow:hidden}',
+  // 密集工具条图标 = 按钮 × 0.5（28px 钮 → 14px，视觉密度不放大，但按钮改尺寸图标自动跟）。
+  '.dsw-webpanel-iconbtn svg{width:calc(var(--dsw-iconbtn) * .55);height:calc(var(--dsw-iconbtn) * .55);display:block}',
   '.dsw-webpanel-iconbtn:hover{background:var(--dsw-alias-bg-module-platform);color:var(--dsw-alias-label-primary)}',
   '.dsw-webpanel-iconbtn:disabled{opacity:.35;cursor:default;background:transparent;color:var(--dsw-alias-label-secondary)}',
   '.dsw-webpanel-iconbtn-close:hover{background:color-mix(in srgb,var(--dsw-alias-state-error-primary) 14%,transparent);color:var(--dsw-alias-state-error-primary)}',

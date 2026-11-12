@@ -23,7 +23,7 @@ const PANEL_CSS = [
   '.dsw-webpanel-toggle:hover{background:var(--dsw-alias-interactive-bg-hover)}',
   '.dsw-webpanel-toggle-layer[data-wide="0"] .dsw-webpanel-toggle{border-radius:50%;justify-content:center;gap:0;width:36px;height:36px;margin:0;padding:0}',
   '.dsw-webpanel-toggle-icon{flex:none;display:inline-flex;align-items:center;justify-content:center}',
-  '.dsw-webpanel-toggle-icon svg{width:18px;height:18px;display:block}',
+  '.dsw-webpanel-toggle-icon svg{width:1.25em;height:1.25em;display:block}',
   '.dsw-webpanel-toggle-label{text-overflow:ellipsis;white-space:nowrap;min-width:0;overflow:hidden}',
   // Hover chooser: pick which mode the plain click opens next time.
   // It is position:fixed (anchored to the button rect on open) on purpose: the
