@@ -46,7 +46,8 @@
     "./client": "./lib/client.js",
     "./cordis.patch.yml": "./cordis.patch.yml",
     "./package.json": "./package.json",
-    "./locale/*.json": "./locale/*.json"
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
   },
   "files": [
     "lib/*.js",
@@ -59,10 +60,13 @@
     "CHANGELOG.md",
     "docs/README.md",
     "locale/*.json",
+    "icon.svg",
     "docs/assets/**",
     "screenshots.json"
   ],
   "dsh": {
+    "capabilities": ["llm:adapter", "network:egress", "sessions:read"],
+    "labels": ["third-party-model-provider"],
     "plugin": true,
     "kind": "server",
     "bundle": {
