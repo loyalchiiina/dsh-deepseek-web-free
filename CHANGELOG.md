@@ -1,3 +1,9 @@
+## 1.0.41 (2026-11-13)
+
+- 包内新增 icon.svg（地球经纬线，viewBox 0 0 36 36、currentColor），exports 暴露 ./icon、files 收录，符合 DSH 官方 dsh-doc 图标规范。
+- package.json 补 exports 的 ./locale/*.json 与 files 的 locale/*.json。
+- 纯元数据/图标改动，运行逻辑零变化。
+
 ## 1.0.40 (2026-11-13)
 - 设置页导航图标改成地球经纬线（Web 语义）：注册 `settings.section.icon` 槽（id 必须等于分区 id `deepseek-web`），宿主不再回退通用齿轮。
 
