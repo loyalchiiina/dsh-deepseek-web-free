@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { Button, StateDot } from '@deepseek-ai/dsh-client-ui-primitives'
-import { CANCEL_PATH, DOCTOR_PATH, LOGIN_PATH, LOGOUT_PATH, pluginFetch, STATUS_PATH } from './api.ts'
+import { CANCEL_PATH, DOCTOR_PATH, LOGOUT_PATH, pluginFetch, STATUS_PATH, WEBPANEL_TOKEN_PATH } from './api.ts'
 import type { DeepSeekWebSettingsKey } from './locales.ts'
 import type { ClientAuthState } from './state.ts'
 import { openWebPanel } from './webpanel-bus.ts'
@@ -186,9 +186,45 @@ export function DeepSeekWebSettings(props: DeepSeekWebSettingsProps): JSX.Elemen
     savePrefs(next)
   }
 
+  const openPanel = (): void => {
+    if (prefs.position === 'sidebar' && props.openPanelTab !== undefined) props.openPanelTab()
+    else openWebPanel()
+  }
+
   const refresh = useCallback(async () => {
-    const next = await pluginFetch(STATUS_PATH) as ClientAuthState
-    if (typeof next?.status === 'string') setState(next)
+    // The settings page, the docked sidebar tab and the floating-ball panel
+    // must agree on one login state. /auth/status mirrors the isolated-browser
+    // state machine and can stay stuck in "waiting-for-login" for up to 15
+    // minutes after a sign-in already completed inside the official page, so
+    // the stored credential is the single source of truth here. Only its
+    // boolean status is read: the token itself is never copied into React
+    // state, localStorage, UI or logs.
+    let signedIn = false
+    try {
+      const credential = await pluginFetch(WEBPANEL_TOKEN_PATH) as { status?: string } | null
+      signedIn = credential?.status === 'signed-in'
+    } catch {
+      return
+    }
+    let info: ClientAuthState | null = null
+    try {
+      info = await pluginFetch(STATUS_PATH) as ClientAuthState | null
+    } catch {
+      info = null
+    }
+    if (!signedIn) {
+      setState({ status: 'signed-out' })
+      return
+    }
+    if (info?.status === 'signed-in') {
+      setState({
+        status: 'signed-in',
+        ...(info.account ? { account: info.account } : {}),
+        ...(info.browser ? { browser: info.browser } : {}),
+      })
+      return
+    }
+    setState({ status: 'signed-in' })
   }, [])
 
   useEffect(() => {
@@ -246,11 +282,8 @@ export function DeepSeekWebSettings(props: DeepSeekWebSettingsProps): JSX.Elemen
               {state.status === 'signed-in'
                 ? (
                   <>
-                    <Button variant="outline" size="sm" disabled={busy} onClick={() => void run(async () => {
-                      await pluginFetch(LOGIN_PATH, { method: 'POST', body: JSON.stringify({ resetProfile: false }) })
-                    })}
-                    >
-                      {busy ? t('working') : t('reconnect')}
+                    <Button variant="outline" size="sm" disabled={busy} onClick={openPanel}>
+                      {t('reconnect')}
                     </Button>
                     <Button variant="ghost" size="sm" disabled={busy} onClick={() => void run(async () => {
                       await pluginFetch(LOGOUT_PATH, { method: 'POST', body: JSON.stringify({ clearProfile: true }) })
@@ -263,11 +296,8 @@ export function DeepSeekWebSettings(props: DeepSeekWebSettingsProps): JSX.Elemen
                 : null}
               {state.status === 'signed-out' || state.status === 'error' || state.status === 'loading'
                 ? (
-                  <Button variant="primary" size="sm" disabled={busy || signingIn} onClick={() => void run(async () => {
-                    await pluginFetch(LOGIN_PATH, { method: 'POST', body: JSON.stringify({ resetProfile: true }) })
-                  })}
-                  >
-                    {busy ? t('working') : state.status === 'error' ? t('loginAgain') : t('signIn')}
+                  <Button variant="primary" size="sm" disabled={busy || signingIn} onClick={openPanel}>
+                    {t('signIn')}
                   </Button>
                 )
                 : null}
@@ -336,10 +366,7 @@ export function DeepSeekWebSettings(props: DeepSeekWebSettingsProps): JSX.Elemen
               variant="primary"
               size="sm"
               disabled={!prefs.enabled}
-              onClick={() => {
-                if (prefs.position === 'sidebar' && props.openPanelTab !== undefined) props.openPanelTab()
-                else openWebPanel()
-              }}
+              onClick={openPanel}
             >
               {t('panelOpenNow')}
             </Button>

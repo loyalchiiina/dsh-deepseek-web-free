@@ -75,6 +75,11 @@ function seedScript(token: string): string {
   return [
     '(function () {',
     '  try {',
+    '    localStorage.setItem("closeUnsafeEnvWarn", JSON.stringify({ value: true, __version: "0" }));',
+    '  } catch (error) {',
+    '    /* best effort: the unsafe-env warning is cosmetic; never block token seeding */',
+    '  }',
+    '  try {',
     '    var wanted = ' + payload + ';',
     '    var current = localStorage.getItem("userToken");',
     '    if (current === wanted) return "unchanged";',

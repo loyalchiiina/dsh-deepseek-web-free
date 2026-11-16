@@ -1,3 +1,10 @@
+## 1.0.42 (2026-11-16) — 登录统一到 DSH 网页面板内的官方页
+
+- 隐藏面板顶部红色「一键登录」横幅与 112px 大按钮（渲染改为无条件 `return null`）；保留 3 秒轮询回写、反向登出与 `onSignedIn`/`onSignedOut` 回调，设置页 / 侧边栏 / 悬浮球三者同步不丢。
+- 设置页登录状态改以宿主持久凭据为准（只读 `GET /webpanel/token` 的布尔 status，绝不把 token 落到 UI/日志），不再被隔离浏览器状态机的 `waiting-for-login` 挂起误导；「使用 DeepSeek 登录」「重新连接」「立即打开面板」三个按钮统一改为 `openPanel()` 打开官方页面，不再弹隔离浏览器；「退出登录」「取消」「诊断」保留。
+- 面板 `seedScript` 在注入 `userToken` 前预写 `localStorage.closeUnsafeEnvWarn`，从源头关闭网页端「使用环境异常」提示；独立 try/catch，写入失败不阻断 token 注入。仅隐藏前端提示文案，不改变也不绕过账号校验与人机验证。
+- 设置页中英各 6 处文案改「面板登录」口径；README / INSTALL / docs 同步；`locale/*.json` 去掉写死的 `v1.0.37` 前缀；`dsh.capabilities` 补 `sessions:write`；README 补 `auth/import`、`webpanel/token` 路由与新机制披露。
+
 ## 1.0.41 (2026-11-13)
 
 - 包内新增 icon.svg（地球经纬线，viewBox 0 0 36 36、currentColor），exports 暴露 ./icon、files 收录，符合 DSH 官方 dsh-doc 图标规范。

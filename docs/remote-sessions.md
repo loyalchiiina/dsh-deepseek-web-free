@@ -1,6 +1,6 @@
 # DeepSeek Web remote sessions
 
-After you sign in (Settings → DeepSeek Web), a compact **DeepSeek Web chats**
+After you sign in on the official page inside the DSH web panel, a compact **DeepSeek Web chats**
 control appears in the sidebar footer. It lists conversations from the signed-in
 Web account. Opening a row creates or reuses a normal Harness session.
 

@@ -2,9 +2,9 @@
 
 # dsh-deepseek-web-free
 
-> **功能描述**：把 DeepSeek 网页版桥接进 DSH：不花 API 额度就能跑短上下文对话、工作流与技能包，直接发图片也能免费识图。带悬浮球与侧边栏，一键登录后长期保持登录；正文任意文字右键即可投送到网页端输入框，投送前自动清空原输入框，不用再扫码、跳转、复制粘贴。适配 DSH 内核 0.2.2-rc.1。
+> **功能描述**：把 DeepSeek 网页版桥接进 DSH：不花 API 额度就能跑短上下文对话、工作流与技能包，直接发图片也能免费识图。带悬浮球与侧边栏，在网页面板内的官方 chat.deepseek.com 页面登录一次后长期保持登录，设置页与两个面板入口共用同一份登录状态；正文任意文字右键即可投送到网页端输入框，投送前自动清空原输入框，不用再跳转、复制粘贴。适配 DSH 内核 0.2.2-rc.1。
 >
-> **English**: Bridges the DeepSeek web client into DSH, so short-context conversations, workflows and skill packs run without an API key, and a picture pasted in DSH gets read for free. Ships a floating ball plus sidebar, one-click login that stays logged in, and a right-click action that sends any selected text into the web input after clearing it, so no more QR scanning, tab switching or manual pasting. Adapts DSH kernel 0.2.2-rc.1.
+> **English**: Bridges the DeepSeek web client into DSH, so short-context conversations, workflows and skill packs run without an API key, and a picture pasted in DSH gets read for free. Ships a floating ball plus sidebar; sign in once on the official chat.deepseek.com page inside the DSH web panel, and the settings page, the sidebar tab and the floating ball share one login state. A right-click action sends any selected text into the web input after clearing it, so no more tab switching or manual pasting. Adapts DSH kernel 0.2.2-rc.1.
 
 
 **把 DeepSeek 网页端接入 DeepSeek Harness，并在对话界面内嵌网页面板 —— `y-wi/dsh-deepseek-web` 的 fork**
@@ -25,12 +25,12 @@
 
 非官方 Provider。本仓库开放 Harness **集成层与传输层**；协议兼容由随包分发的预编译 WebAssembly 提供。
 
-本项目与 DeepSeek **无隶属或背书关系**。使用你自己的 DeepSeek 账号。插件不会绕过 CAPTCHA、WAF 或账号访问控制；交互式验证在隔离浏览器窗口中完成。
+本项目与 DeepSeek **无隶属或背书关系**。使用你自己的 DeepSeek 账号。插件不会绕过 CAPTCHA、WAF 或账号访问控制；日常登录直接在 DSH 网页面板内的官方 chat.deepseek.com 页面完成，交互式验证也由该页面承接（隔离浏览器登录仅作为 CLI / TUI 与 `/auth/login` 调用的备用通道保留）。
 
 > [!WARNING]
 > **免责声明（务必先读）**
 >
-> 本插件只是为了**让你在 DSH 里直接用 DeepSeek 网页端更方便**：它复用你**自己的** DeepSeek 网页账号登录态来过模型请求，也可以把网页面板嵌进 DSH 侧栏 / 悬浮球里直接对话。它**不加速、不绕过**任何风控，也不承诺长期可用。
+> 本插件只是为了**让你在 DSH 里直接用 DeepSeek 网页端更方便**：它复用你**自己的** DeepSeek 网页账号登录态来过模型请求，也可以把网页面板嵌进 DSH 侧栏 / 悬浮球里直接对话。它**不加速、不绕过**任何风控，也不承诺长期可用。面板加载时会写入一个 localStorage 标记（`closeUnsafeEnvWarn`）关闭网页端「使用环境异常」这条前端提示，仅隐藏提示文案，不改变也不绕过账号校验、人机验证或风控判定。
 >
 > **使用网页端能力可能存在账号风险**（包括但不限于：被限流、被临时或永久封禁、会话异常、页面行为变化导致功能失效）。**由此产生的任何后果由使用者自行承担，本项目与作者不承担任何责任**，也不提供任何形式的担保。请自行评估风险后再决定是否登录使用。
 >
@@ -64,7 +64,7 @@ dsh plugin --profile web peers check
 dsh web
 ```
 
-然后到 **设置 → DeepSeek Web → Sign in with DeepSeek**。确认 Provider `deepseek-web` 出现，模型 `default` 可见（1.0.31 起不再提供独立的 Expert 模型；历史配置里的 `expert` 会自动归一到 `default`）。
+然后到 **设置 → DeepSeek Web → 打开面板登录**（或直接打开侧边栏 / 悬浮球面板），在面板内官方 chat.deepseek.com 页面完成登录，插件会把 token 自动写回 Host 凭据库。确认 Provider `deepseek-web` 出现，模型 `default` 可见（1.0.31 起不再提供独立的 Expert 模型；历史配置里的 `expert` 会自动归一到 `default`）。
 
 DSH / Cordis / React 由运行时 `$DSH_HOME/profiles/node_modules` 提供，不会在插件目录再装一份。
 
@@ -122,7 +122,7 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 
 （截图资源只在 GitHub 仓库中提供，npm 包内不含。）
 
-**网页面板（1.0.12 起）：** 除了「把网页端当模型」，插件还能把 `chat.deepseek.com` **直接嵌进 DSH 界面**——右侧栏标签页，或一颗可拖动、可拉伸的**鲸鱼悬浮球窗口**（位置与尺寸跨重启记忆、拖球时窗口跟随）。**登录只需一次**：设置页登录与面板内登录双向同步，退出也一样同步，重启后无需重登。详见下文「网页面板」一节。
+**网页面板（1.0.12 起）：** 除了「把网页端当模型」，插件还能把 `chat.deepseek.com` **直接嵌进 DSH 界面**——右侧栏标签页，或一颗可拖动、可拉伸的**鲸鱼悬浮球窗口**（位置与尺寸跨重启记忆、拖球时窗口跟随）。**登录只需一次**：首次在面板内的官方页面登录后，token 自动回写 Host 凭据库；设置页状态与侧边栏、悬浮球面板共用同一份登录状态，退出也一样同步，重启后无需重登。详见下文「网页面板」一节。
 
 <table>
 <tr>
@@ -146,7 +146,7 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 <tr>
 <td>
 <img src="https://raw.githubusercontent.com/loyalchiiina/dsh-deepseek-web-free/main/docs/assets/showcase-panel-settings.png" alt="DeepSeek Web 设置页：登录、诊断、网页面板" width="470">
-<p><b>设置页。</b> 隔离浏览器登录（一次登录长期有效）、诊断、启用网页面板、选择位置、立即打开。</p>
+<p><b>设置页。</b> 打开面板登录、诊断、启用网页面板、选择位置、立即打开；登录状态与侧边栏 / 悬浮球面板同步。（截图为 1.0.41 界面，1.0.42 起登录按钮改为「打开面板登录」、状态读取改以宿主持久凭据为准。）</p>
 </td>
 </tr>
 </table>
@@ -208,7 +208,7 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 
 ▶ **[观看效果视频：选中文字 → 右键 → 复制到 DeepSeek 网页（MP4）](https://github.com/loyalchiiina/dsh-deepseek-web-free/releases/download/v1.0.35/right-click-copy-to-deepseek.mp4)**
 
-细节：位置=悬浮球 → 自动展开悬浮球窗口（窗口收起/隐藏但 webview 仍挂载也会展开）；位置=侧边栏 → 打开/切到侧边栏 DeepSeek 标签页（已在则不重复开）；打开前先让另一面退出并留 200ms 释放共享会话；会顺手点掉 DeepSeek 风险提示弹窗（加载后立即点一次，再以 150ms 节奏观察 8 秒）；结果提示：成功「已复制到 DeepSeek 网页输入框」，22 秒内没等到页面就绪「打开 DeepSeek 网页超时，请先手动打开面板再试」，写入失败自动回退剪贴板并提示 Ctrl+V。只在**有选中文字**时接管右键，未选中时右键行为不变。
+细节：位置=悬浮球 → 自动展开悬浮球窗口（窗口收起/隐藏但 webview 仍挂载也会展开）；位置=侧边栏 → 打开/切到侧边栏 DeepSeek 标签页（已在则不重复开）；打开前先让另一面退出并留 200ms 释放共享会话；会顺手点掉 DeepSeek 风险提示弹窗（加载后立即点一次，再以 150ms 节奏观察 8 秒）；结果提示：成功「已复制到 DeepSeek 网页输入框」，22 秒内没等到页面就绪「打开 DeepSeek 网页超时，请先手动打开面板再试」，写入失败自动回退剪贴板并提示 Ctrl+V。只在**有选中文字**时接管右键，未选中时右键行为不变。这里的「顺手点掉风险提示弹窗」只作用于右键打开的面板；1.0.42 起面板加载时还会预写 `closeUnsafeEnvWarn` 标记，从源头关闭「使用环境异常」提示，两者互不影响。
 
 ### 只有一个 webview 活着（切换与重挂）
 
@@ -221,7 +221,7 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 
 ### 免登录是怎么做的
 
-插件把已保存的 DeepSeek 账号 token 通过同源路由 `GET /plugins/dsh-deepseek-web/webpanel/token` 交给渲染进程，面板在自己的 guest 分区里把 token 写进 `localStorage.userToken` 然后刷新页面——网页自己完成登录，PoW、WebSocket、API 全部在页面内原生跑，**不需要在面板里再登录一次，也不走任何本地反代**。
+插件把已保存的 DeepSeek 账号 token 通过同源路由 `GET /plugins/dsh-deepseek-web/webpanel/token` 交给渲染进程，面板在自己的 guest 分区里把 token 写进 `localStorage.userToken` 然后刷新页面——网页自己完成登录，PoW、WebSocket、API 全部在页面内原生跑，**登录过一次之后不用再登录，也不走任何本地反代**。首次安装或退出登录后，直接在这个面板里的官方页面登录一次即可（不再弹独立隔离浏览器窗口）。
 
 > token 只在 Host 与 DSH 渲染进程之间传递，不落盘、不出现在页面 URL 里；路由受 `trustedPluginRequest` 保护（仅 loopback + 同源）。
 
@@ -230,8 +230,8 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 面板的 guest 分区是内存分区（每次启动换新的 `partition`），所以在面板里手动登录得到的会话**关窗即失效**。1.0.20 补上了反向通道，两个入口共用同一份宿主凭据：
 
 - **面板里登录 → 自动永久**：页面登录后，插件读取页面自己的 `localStorage.userToken`，POST 到同源路由 `/plugins/dsh-deepseek-web/auth/import`；Host 先用上游 `currentUser()` 校验，通过才写入 DSH 凭据库。下次重启直接免登录。
-- **设置页里登录 → 面板自动生效**：宿主凭据仍是唯一真源，面板加载时照旧注入（见上节）。
-- **未登录提示条**：面板顶部检测到宿主未登录时显示说明 +「一键登录」，走宿主登录流程（弹出隔离浏览器），成功后自动刷新面板。
+- **设置页状态 → 与面板对齐（1.0.42 起）**：设置页登录状态改以 Host 持久凭据为准，不再被隔离浏览器状态机的 `waiting-for-login` 挂起状态误导；设置页的登录按钮也改为直接打开面板。宿主凭据仍是唯一真源，面板加载时照旧注入（见上节）。
+- **未登录提示条已下线（1.0.42 起）**：面板顶部不再显示红色说明条与「一键登录」大按钮；未登录时直接在面板内的官方页面登录即可。后台 3 秒轮询回写、反向登出与 `onSignedIn`/`onSignedOut` 回调全部保留，设置页、侧边栏与悬浮球的状态同步不因此中断。
 - 设置页与 README 都写明「登录一次即永久生效」，避免新用户以为面板是另一个账号体系。
 
 ### 平台限制
@@ -240,7 +240,7 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 
 ### 与既有能力共存
 
-原有功能全部保留、互不影响：provider `deepseek-web` 的模型列表（`default`）、DeepThink 思考开关、网页搜索、侧栏会话接续、派生到工作区、隔离浏览器登录与 profile。
+原有功能全部保留、互不影响：provider `deepseek-web` 的模型列表（`default`）、DeepThink 思考开关、网页搜索、侧栏会话接续、派生到工作区。隔离浏览器登录与独立 profile 仍保留给 CLI / TUI 与 `/auth/login` 备用通道，不再是日常登录主路径。
 
 ## 模型
 
@@ -300,7 +300,7 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 | `maxToolCallsPerTurn` | 数字，**须为 1..32 整数** | `16` | 每轮最多工具调用数；越界会抛 `maxToolCallsPerTurn must be an integer in 1..32` |
 | `maxProtocolRepairAttempts` | 数字 | `2` | 协议解析失败的修复重试次数 |
 | `maxToolResultBytes` | 数字 | `65536` | 单个工具结果回传上限 |
-| `browser.preferred` | `auto` \| `chrome` \| `edge` \| `brave` \| `chromium` \| `managed` | `auto` | 登录用哪个浏览器；`managed` 表示由插件托管下载 |
+| `browser.preferred` | `auto` \| `chrome` \| `edge` \| `brave` \| `chromium` \| `managed` | `auto` | 隔离浏览器登录用哪个浏览器；`managed` 表示由插件托管下载。仅 CLI / TUI 与 `/auth/login` 备用通道生效，面板内官方页面登录不涉及此项 |
 | `browser.allowManagedDownload` | 布尔 | `true` | 允许插件自行下载托管浏览器 |
 
 配置写坏时不会崩：`options()` 会保留上一次的好配置并打一条 `keeping last good configuration after invalid settings`。
@@ -345,12 +345,12 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 | TypeScript 开源层 | HTTP、SSE、浏览器登录、凭证、DSH 适配器、工具桥、回放 |
 | 预编译 WASM 核心 | 协议兼容与 PoW |
 
-宿主侧 HTTP 路由挂在 `/plugins/dsh-deepseek-web/` 前缀下（`auth/login`、`auth/logout`、`auth/cancel`、`auth/status`、`doctor`、`account`、`fork`、`sessions`）。这些是插件内部路由，不构成对外 API。
+宿主侧 HTTP 路由挂在 `/plugins/dsh-deepseek-web/` 前缀下（`auth/login`、`auth/logout`、`auth/cancel`、`auth/status`、`auth/import`、`webpanel/token`、`doctor`、`account`、`fork`、`sessions`）。这些是插件内部路由，不构成对外 API。
 
 ## 安全
 
 - 不要打印 `.credentials.yaml`、Bearer token、CDP 地址或浏览器配置目录的绝对路径（`lib/bin.js` 出错时走 `redactSensitiveText` 后再写 stderr）
-- 登录只使用插件隔离 profile
+- 日常登录在 DSH 网页面板的内存分区内完成；仅 CLI / TUI 与 `/auth/login` 备用通道使用插件隔离 profile
 - 凭证只写入 DSH 凭证存储
 
 披露流程见 [SECURITY.md](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/docs/SECURITY.md)。浏览器登录细节见 [docs/browser-auth.md](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/docs/browser-auth.md)。

@@ -20,7 +20,7 @@
 
 非官方 Provider。本仓库开放 Harness **集成层与传输层**；协议兼容由随包分发的预编译 WebAssembly 提供。
 
-本项目与 DeepSeek **无隶属或背书关系**。使用你自己的 DeepSeek 账号。插件不会绕过 CAPTCHA、WAF 或账号访问控制；交互式验证在隔离浏览器窗口中完成。
+本项目与 DeepSeek **无隶属或背书关系**。使用你自己的 DeepSeek 账号。插件不会绕过 CAPTCHA、WAF 或账号访问控制；1.0.42 起日常登录直接在 DSH 网页面板内的官方页面完成，隔离浏览器登录仅作为 CLI / TUI 与 `/auth/login` 调用的备用通道保留。面板加载时会写入一个 localStorage 标记（`closeUnsafeEnvWarn`）关闭网页端「使用环境异常」这条前端提示，仅隐藏提示文案，不改变也不绕过账号校验、人机验证或风控判定。
 
 > 📌 这份文档是**本 fork 的版本**。上游原文存档在 [`upstream/README.upstream.md`](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/docs/upstream/README.upstream.md)，两者内容不同：上游文档里的安装命令、npm 链接、徽章全部指向 `dsh-deepseek-web`（上游包），照它装会装到**不含本 fork 修复的旧版**。
 
@@ -60,7 +60,7 @@ dsh plugin --profile web peers check
 dsh web
 ```
 
-设置 → DeepSeek Web → Sign in with DeepSeek。确认 Provider `deepseek-web` 出现，模型 `default` 可见（1.0.31 起不再提供独立 Expert）。
+设置 → DeepSeek Web → **打开面板登录**。确认 Provider `deepseek-web` 出现，模型 `default` 可见（1.0.31 起不再提供独立 Expert）。
 
 DSH / Cordis / React 由运行时 `$DSH_HOME/profiles/node_modules` 提供，不会在插件目录再装一份。
 
@@ -98,8 +98,8 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 <table>
 <tr>
 <td>
-<img src="https://raw.githubusercontent.com/loyalchiiina/dsh-deepseek-web-free/main/docs/assets/showcase-login.gif" alt="设置中用隔离浏览器登录 DeepSeek Web" width="720">
-<p><b>隔离浏览器登录。</b> 用独立浏览器登录 <code>chat.deepseek.com</code>，不读取日常 Chrome / Edge 配置。凭证只保存在 DSH 存储中。</p>
+<img src="https://raw.githubusercontent.com/loyalchiiina/dsh-deepseek-web-free/main/docs/assets/showcase-panel-settings.png" alt="DeepSeek Web 设置页：打开面板登录、诊断、网页面板" width="720">
+<p><b>在网页面板内登录。</b> 1.0.42 起在 DSH 网页面板（侧边栏或悬浮球）里的官方 <code>chat.deepseek.com</code> 页面登录一次，设置页与两个面板入口共用同一份宿主凭据。截图为 1.0.41 界面，1.0.42 起登录按钮改为「打开面板登录」、状态读取改以宿主持久凭据为准。</p>
 </td>
 </tr>
 <tr>
@@ -144,7 +144,7 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 
 ## 网页面板（侧边栏 / 悬浮球）与右键复制（1.0.34 起）
 
-插件还能把 `chat.deepseek.com` 直接嵌进 DSH：右侧栏标签页，或可拖动/可拉伸的鲸鱼悬浮球窗口；登录一次双向同步。
+插件还能把 `chat.deepseek.com` 直接嵌进 DSH：右侧栏标签页，或可拖动/可拉伸的鲸鱼悬浮球窗口；登录一次，设置页与面板共用同一份宿主凭据（1.0.42 起登录也在这个面板内的官方页面完成）。
 
 - **选中文字右键**：会话里选中文字后右键，菜单为「复制 + 复制到 DeepSeek 网页」；后者按设置里的位置偏好自动打开悬浮球或侧边栏，先清空 DeepSeek 输入框再写入，并自动关掉风险提示弹窗。
 - ▶ [观看效果视频（MP4）](https://github.com/loyalchiiina/dsh-deepseek-web-free/releases/download/v1.0.35/right-click-copy-to-deepseek.mp4)
@@ -179,7 +179,7 @@ DeepSeek Web 没有官方 function calling。插件只解析模型输出；适�
 ## 安全
 
 - 不要打印 `.credentials.yaml`、Bearer token、CDP 地址或浏览器配置目录的绝对路径
-- 登录只使用插件隔离 profile
+- 日常登录在 DSH 网页面板的内存分区内完成；仅 CLI / TUI 与 `/auth/login` 备用通道使用插件隔离 profile
 - 凭证只写入 DSH 凭证存储
 
 披露流程见 [SECURITY.md](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/docs/SECURITY.md)。浏览器登录细节见 [browser-auth.md](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/docs/browser-auth.md)。

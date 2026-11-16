@@ -173,35 +173,9 @@ export function WebPanelAuthBanner(props: WebPanelAuthBannerProps): JSX.Element 
     }
   }, [readStatus, signingIn])
 
-  if (state !== 'out') return null
-  const text = syncError.length > 0
-    ? `同步失败：${syncError}`
-    : (failed ? t('panelSignInFailed') : t('panelSignInHint'))
-  return (
-    <div
-      className="dsw-webpanel-auth"
-      style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '16px 16px 18px', background: '#d92c2c', backgroundImage: 'linear-gradient(135deg,#f0453f,#c81e2b)' }}
-    >
-      <div className="dsw-webpanel-auth-head" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span className="dsw-webpanel-auth-icon" aria-hidden="true">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="8" cy="8" r="4.2" />
-            <path d="M11 11l9 9" />
-            <path d="M17.5 17.5l2-2" />
-            <path d="M15 15l2-2" />
-          </svg>
-        </span>
-        <span className="dsw-webpanel-auth-text" style={{ flex: '1 1 auto', minWidth: 0, fontSize: 19, fontWeight: 700, lineHeight: 1.5, color: '#111111' }}>{text}</span>
-      </div>
-      <button
-        type="button"
-        className="dsw-webpanel-auth-btn"
-        disabled={signingIn}
-        onClick={() => { void signIn() }}
-        style={{ width: '100%', height: 112, border: 0, borderRadius: 14, background: '#fff', color: '#c81e2b', fontSize: 56, fontWeight: 800, letterSpacing: 4, cursor: signingIn ? 'default' : 'pointer', boxShadow: '0 4px 14px rgba(0,0,0,.25)', fontFamily: 'inherit' }}
-      >
-        {signingIn ? t('panelSigningIn') : t('panelSignInAction')}
-      </button>
-    </div>
-  )
+  // Banner UI (hint text + one-click sign-in button) is intentionally hidden:
+  // sign-in happens on the official page. All side effects above stay alive,
+  // so the 3s poll, reverse sign-out and onSignedIn/onSignedOut callbacks
+  // keep the Host credential and both panel surfaces in sync.
+  return null
 }

@@ -2,6 +2,8 @@
 
 # dsh-deepseek-web
 
+> 📌 This page is the archived upstream (`y-wi/dsh-deepseek-web`) English README. This fork (`dsh-deepseek-web-free`, v1.0.42) signs in on the official chat.deepseek.com page inside the DSH web panel; see the repository root [README.md](../README.md) for current behavior, including login, the settings page and the 1.0.42 changelog.
+
 **Connect DeepSeek Web to DeepSeek Harness**
 
 [English](./README.en.md) · [中文](./README.md) · [Install](./INSTALL.md) · [npm](https://www.npmjs.com/package/dsh-deepseek-web)

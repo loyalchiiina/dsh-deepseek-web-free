@@ -15,14 +15,15 @@ by the DSH profile runtime (`$DSH_HOME/profiles/node_modules`). They are not
 installed as copies under the plugin. Client UI injects are provided by DSH
 ModuleLoader, not by npm peer installation.
 
-Open Settings → DeepSeek Web → Sign in with DeepSeek. A dedicated browser window
-opens. After you log in on chat.deepseek.com, the plugin stores the credential
-in DSH.
+Open Settings → DeepSeek Web → **Open the panel to sign in** (or open the sidebar
+tab / floating ball directly). Sign in on the official chat.deepseek.com page
+inside the DSH web panel; the plugin stores the token in DSH and the settings
+page, sidebar tab and floating ball share one login state.
 
 Check:
 
 - provider `deepseek-web` is listed
-- models `default` and `expert` are visible
+- provider `deepseek-web` is listed and model `default` is visible (the separate `expert` model was folded into `default` in 1.0.31)
 - auth status returns public state only (no token)
 
 After sign-in, the sidebar footer action **DeepSeek Web chats** lists Web
