@@ -1,6 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { pluginResponseHeaders, redactSensitiveText, trustedPluginRequest } from '@dsh-deepseek-web/compat'
-import type { PluginWebServer } from './auth-routes.ts'
+import { hostRejection } from './auth-routes.ts'
+import type { HostConnection, PluginWebServer } from './auth-routes.ts'
 import type { RemoteSessionService } from './remote-session-service.ts'
 import { PluginSessionError } from './dsh-session.ts'
 import { ERROR_CODES } from './errors.ts'
@@ -90,12 +91,21 @@ function abortFrom(req: IncomingMessage): AbortController {
   return controller
 }
 
-export function registerSessionRoutes(webServer: PluginWebServer, service: RemoteSessionService): () => void {
+export function registerSessionRoutes(
+  webServer: PluginWebServer,
+  service: RemoteSessionService,
+  connection: () => HostConnection | undefined,
+): () => void {
   const wrap = (
     mutating: boolean,
     fn: (req: IncomingMessage, res: ServerResponse, signal?: AbortSignal) => Promise<void>,
   ) =>
     async (req: IncomingMessage, res: ServerResponse) => {
+      const rejection = hostRejection(req, connection())
+      if (rejection !== undefined) {
+        write(res, rejection, { error: 'host authentication required' })
+        return
+      }
       if (!trustedPluginRequest(req)) {
         forbidden(res)
         return

@@ -1,3 +1,10 @@
+## 1.0.43 (2026-11-17) — 宿主 HTTP 路由接入 DSH 框架层准入
+
+- 10 条 `webServer.register` 路由的 handler 入口先过 `ctx.connection.requestRejection(req)`（DSH 框架层 Host/Origin 准入 + 浏览器认证），再保留原有 `trustedPluginRequest()`（仅 loopback + 同源），两层并列 AND；未获准入直接返回 401/403，不落到业务逻辑。
+- 新增 `hostRejection()` 统一包装 gate：connection 缺席、gate 非函数或抛错一律 fail-closed 返回 503，绝不按放行处理；`index.ts` 惰性读取 connection 服务，兼容旧内核。
+- `registerAuthRoutes` / `registerSessionRoutes` 两个 wrapper 各加一处准入判断，10 条路由的 path / kind / disposer 与 `name` / `inject` 一行未动；客户端零改动，设置页、侧边栏、悬浮球的登录状态与面板内官方页登录流程全部保留。
+- 依据 awesome-dsh-plugin 维护者在 PR #15910 的评审意见修正。静态自验：`node --check` 与宿主/客户端双 `tsc --noEmit` 退出码 0、23 项准入行为断言全 PASS、desktop junction SHA 一致；实机 HTTP 验收待用户彻底退出 DSH 再启动后确认。README / docs 同步披露双层准入与桌面端 profile 安装说明。
+
 ## 1.0.42 (2026-11-16) — 登录统一到 DSH 网页面板内的官方页
 
 - 隐藏面板顶部红色「一键登录」横幅与 112px 大按钮（渲染改为无条件 `return null`）；保留 3 秒轮询回写、反向登出与 `onSignedIn`/`onSignedOut` 回调，设置页 / 侧边栏 / 悬浮球三者同步不丢。

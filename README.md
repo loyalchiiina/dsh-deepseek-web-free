@@ -64,6 +64,8 @@ dsh plugin --profile web peers check
 dsh web
 ```
 
+> **桌面端（desktop profile）**：DSH 桌面客户端的 desktop profile 由 Electron 独占管理，`dsh plugin --profile desktop add` 会被 CLI 直接拒绝并提示 `profile "desktop" is managed exclusively by the Electron application`。桌面端请在插件市场安装，或由宿主管理 `~/.dsh/profiles/desktop/package.json` 的 `dependencies` 与 `dsh.profile.bundles` 后再用 pnpm 安装；上面的 `--profile web` 命令只适用于 `dsh web` 实验环境，Web profile 缺 better-sidebar 等宿主插件，装了也不会显示面板。
+
 然后到 **设置 → DeepSeek Web → 打开面板登录**（或直接打开侧边栏 / 悬浮球面板），在面板内官方 chat.deepseek.com 页面完成登录，插件会把 token 自动写回 Host 凭据库。确认 Provider `deepseek-web` 出现，模型 `default` 可见（1.0.31 起不再提供独立的 Expert 模型；历史配置里的 `expert` 会自动归一到 `default`）。
 
 DSH / Cordis / React 由运行时 `$DSH_HOME/profiles/node_modules` 提供，不会在插件目录再装一份。
@@ -223,7 +225,7 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 
 插件把已保存的 DeepSeek 账号 token 通过同源路由 `GET /plugins/dsh-deepseek-web/webpanel/token` 交给渲染进程，面板在自己的 guest 分区里把 token 写进 `localStorage.userToken` 然后刷新页面——网页自己完成登录，PoW、WebSocket、API 全部在页面内原生跑，**登录过一次之后不用再登录，也不走任何本地反代**。首次安装或退出登录后，直接在这个面板里的官方页面登录一次即可（不再弹独立隔离浏览器窗口）。
 
-> token 只在 Host 与 DSH 渲染进程之间传递，不落盘、不出现在页面 URL 里；路由受 `trustedPluginRequest` 保护（仅 loopback + 同源）。
+> token 只在 Host 与 DSH 渲染进程之间传递，不落盘、不出现在页面 URL 里；1.0.43 起路由入口先过 DSH 框架层的 `ctx.connection.requestRejection(req)`（Host/Origin 准入 + 浏览器认证），再过插件自己的 `trustedPluginRequest`（仅 loopback + 同源），两层并列；gate 缺席或抛错一律 fail-closed 返回 503，不按放行处理。
 
 ### 登录统一（反向同步，1.0.20 起）
 
@@ -345,13 +347,14 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 | TypeScript 开源层 | HTTP、SSE、浏览器登录、凭证、DSH 适配器、工具桥、回放 |
 | 预编译 WASM 核心 | 协议兼容与 PoW |
 
-宿主侧 HTTP 路由挂在 `/plugins/dsh-deepseek-web/` 前缀下（`auth/login`、`auth/logout`、`auth/cancel`、`auth/status`、`auth/import`、`webpanel/token`、`doctor`、`account`、`fork`、`sessions`）。这些是插件内部路由，不构成对外 API。
+宿主侧 HTTP 路由挂在 `/plugins/dsh-deepseek-web/` 前缀下（`auth/login`、`auth/logout`、`auth/cancel`、`auth/status`、`auth/import`、`webpanel/token`、`doctor`、`account`、`fork`、`sessions`）。这些是插件内部路由，不构成对外 API；1.0.43 起每条路由的 handler 入口先过 `ctx.connection.requestRejection(req)`（DSH 框架层准入），与 `trustedPluginRequest` 的 loopback + 同源校验并列，未获准入返回 401/403、gate 缺席或抛错返回 503。
 
 ## 安全
 
 - 不要打印 `.credentials.yaml`、Bearer token、CDP 地址或浏览器配置目录的绝对路径（`lib/bin.js` 出错时走 `redactSensitiveText` 后再写 stderr）
 - 日常登录在 DSH 网页面板的内存分区内完成；仅 CLI / TUI 与 `/auth/login` 备用通道使用插件隔离 profile
 - 凭证只写入 DSH 凭证存储
+- 宿主 HTTP 路由 1.0.43 起接入 `ctx.connection.requestRejection(req)` 框架层准入，与原有 `trustedPluginRequest` 双层校验并列；精确 `webServer.register` 路由原先绕过 /api 准入 fence 的问题已修复
 
 披露流程见 [SECURITY.md](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/docs/SECURITY.md)。浏览器登录细节见 [docs/browser-auth.md](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/docs/browser-auth.md)。
 

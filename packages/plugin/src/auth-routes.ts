@@ -43,6 +43,27 @@ function forbidden(res: ServerResponse): void {
   write(res, 403, { error: 'forbidden' })
 }
 
+/** Minimal shape of DSH's Host `connection` service (implementation-level API). */
+export interface HostConnection {
+  requestRejection(req: IncomingMessage): 401 | 403 | undefined
+}
+
+/**
+ * Exact webServer.register() routes bypass DSH's /api admission fence, so each
+ * handler must ask the Host Connection service for the same decision itself.
+ * Fail closed: a missing or broken gate is never interpreted as "allow".
+ */
+export function hostRejection(req: IncomingMessage, connection: HostConnection | undefined): number | undefined {
+  if (connection === undefined || connection === null) return 503
+  const gate = connection.requestRejection
+  if (typeof gate !== 'function') return 503
+  try {
+    return gate.call(connection, req) ?? undefined
+  } catch {
+    return 503
+  }
+}
+
 async function readBody(req: IncomingMessage, limit = 4096): Promise<string> {
   const chunks: Buffer[] = []
   let total = 0
@@ -54,11 +75,20 @@ async function readBody(req: IncomingMessage, limit = 4096): Promise<string> {
   return Buffer.concat(chunks).toString('utf8')
 }
 
-export function registerAuthRoutes(webServer: PluginWebServer, service: DeepSeekWebService): () => void {
+export function registerAuthRoutes(
+  webServer: PluginWebServer,
+  service: DeepSeekWebService,
+  connection: () => HostConnection | undefined,
+): () => void {
   const handler = (method: string, fn: (req: IncomingMessage, res: ServerResponse) => Promise<void>) =>
     async (req: IncomingMessage, res: ServerResponse) => {
       if (req.method !== method) {
         write(res, 405, { error: 'method not allowed' })
+        return
+      }
+      const rejection = hostRejection(req, connection())
+      if (rejection !== undefined) {
+        write(res, rejection, { error: 'host authentication required' })
         return
       }
       if (!trustedPluginRequest(req)) {

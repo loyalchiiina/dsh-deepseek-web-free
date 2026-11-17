@@ -11,7 +11,7 @@ import { resolveDshHome } from '@deepseek-ai/dsh-home-paths'
 import * as dshSettings from '@deepseek-ai/dsh-settings'
 import { CompatDeepSeekWebClient, ERROR_CODES } from '@dsh-deepseek-web/compat'
 import { DeepSeekWebAdapter } from './adapter.ts'
-import { registerAuthRoutes } from './auth-routes.ts'
+import { registerAuthRoutes, type HostConnection } from './auth-routes.ts'
 import { registerSessionRoutes } from './session-routes.ts'
 import { RemoteSessionService } from './remote-session-service.ts'
 import { ensureDeepSeekChatWorkspace } from './deepseek-chat-workspace.ts'
@@ -189,8 +189,19 @@ export function apply(ctx: Context, config: Config): void {
 
   ctx.inject(['webServer'], injected => {
     injected.effect(() => {
-      const auth = registerAuthRoutes(injected.webServer, service)
-      const sessions = registerSessionRoutes(injected.webServer, remoteSessions!)
+      // Exact webServer.register() routes bypass DSH's /api admission fence, so
+      // every handler asks the Host Connection service for the same decision.
+      // Read it lazily per request: the service may not exist on older kernels,
+      // and a missing gate must fail closed (see hostRejection in auth-routes).
+      const connection = (): HostConnection | undefined => {
+        try {
+          return ctx.get('connection') as HostConnection | undefined
+        } catch {
+          return undefined
+        }
+      }
+      const auth = registerAuthRoutes(injected.webServer, service, connection)
+      const sessions = registerSessionRoutes(injected.webServer, remoteSessions!, connection)
       return () => {
         auth()
         sessions()

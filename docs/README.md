@@ -20,7 +20,7 @@
 
 非官方 Provider。本仓库开放 Harness **集成层与传输层**；协议兼容由随包分发的预编译 WebAssembly 提供。
 
-本项目与 DeepSeek **无隶属或背书关系**。使用你自己的 DeepSeek 账号。插件不会绕过 CAPTCHA、WAF 或账号访问控制；1.0.42 起日常登录直接在 DSH 网页面板内的官方页面完成，隔离浏览器登录仅作为 CLI / TUI 与 `/auth/login` 调用的备用通道保留。面板加载时会写入一个 localStorage 标记（`closeUnsafeEnvWarn`）关闭网页端「使用环境异常」这条前端提示，仅隐藏提示文案，不改变也不绕过账号校验、人机验证或风控判定。
+本项目与 DeepSeek **无隶属或背书关系**。使用你自己的 DeepSeek 账号。插件不会绕过 CAPTCHA、WAF 或账号访问控制；1.0.42 起日常登录直接在 DSH 网页面板内的官方页面完成，隔离浏览器登录仅作为 CLI / TUI 与 `/auth/login` 调用的备用通道保留。面板加载时会写入一个 localStorage 标记（`closeUnsafeEnvWarn`）关闭网页端「使用环境异常」这条前端提示，仅隐藏提示文案，不改变也不绕过账号校验、人机验证或风控判定。1.0.43 起全部 10 条宿主 HTTP 路由的 handler 入口还会先过 `ctx.connection.requestRejection(req)`（DSH 框架层 Host/Origin 准入 + 浏览器认证），与插件自己的 `trustedPluginRequest` 双层并列；未获准入返回 401/403，gate 缺席或抛错返回 503。
 
 > 📌 这份文档是**本 fork 的版本**。上游原文存档在 [`upstream/README.upstream.md`](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/docs/upstream/README.upstream.md)，两者内容不同：上游文档里的安装命令、npm 链接、徽章全部指向 `dsh-deepseek-web`（上游包），照它装会装到**不含本 fork 修复的旧版**。
 
