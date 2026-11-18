@@ -1,6 +1,6 @@
 import type { UserConfig } from 'tsdown'
 
-const PLUGIN_ID = 'dsh-deepseek-web'
+const PLUGIN_ID = 'dsh-deepseek-web-free'
 const CLIENT_EXTERNALS = [
   'react',
   'react/jsx-runtime',

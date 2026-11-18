@@ -1,3 +1,16 @@
+> ⚠️ **停用公告（2026-11-17）**：2026-11-17 作者实测账号因违反用户使用规范被禁言至 2026-11-20 16:21；1.0.44 起已删除在 DSH 中直接选 DeepSeek Web 模型对话的功能，只保留悬浮球与侧边栏打开官方 chat.deepseek.com 网页面板；请勿再用旧版本复用网页登录态发起对话。
+> ⚠️ **Deprecation notice (2026-11-17)**: On 2026-11-17 the author's own test account was muted until 16:21 on 2026-11-20 for violating the user terms; starting with 1.0.44 the ability to chat by selecting a DeepSeek Web model directly inside DSH has been removed, leaving only the floating ball and sidebar shortcuts that open the official chat.deepseek.com web panel; do not reuse an old version to start chats with a web login session.
+
+## 1.0.44 (2026-11-17) — 移除 DSH 内对话功能，仅保留网页面板
+
+- 删除 `ctx.llm.registerConfigurableProviders` / `ctx.llm.registerAdapter` / `DeepSeekWebAdapter` / provider 模型注册，DSH 内不再出现可选 DeepSeek Web 模型。
+- 删除 RemoteSessionService / session-routes / 会话派生 / 命令链，网页会话接续全线停用。右键投送（选中文字→复制到 DeepSeek 网页）按用户要求保留。
+- 删除 `cordis.patch.yml` 的 `agent-default-model` 覆盖与 TUI 条目，不再劫持默认模型、不再注册 TUI 命令。
+- `dsh.capabilities` 只留 `network:egress`，删除 `llm:adapter` 与 `sessions:*`。
+- 保留 DeepSeekWebService + auth-routes + `webpanel/token` + seedScript(userToken) + WebPanelAuthBanner 3 秒轮询，面板内一次性登录不受影响。
+- README / docs / locale / 元数据同步停用公告、效果图沿用既有截图；1.0.44 已发布（GitHub / npm / Release 同版本），继续适配 DSH 内核 0.2.2-rc.1（Adapts DSH kernel 0.2.2-rc.1）。
+- 本插件不加速也不绕过任何风控，使用后果由使用者自行承担，作者与本项目不承担任何责任。
+
 ## 1.0.43 (2026-11-17) — 宿主 HTTP 路由接入 DSH 框架层准入
 
 - 10 条 `webServer.register` 路由的 handler 入口先过 `ctx.connection.requestRejection(req)`（DSH 框架层 Host/Origin 准入 + 浏览器认证），再保留原有 `trustedPluginRequest()`（仅 loopback + 同源），两层并列 AND；未获准入直接返回 401/403，不落到业务逻辑。

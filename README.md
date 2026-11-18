@@ -2,12 +2,12 @@
 
 # dsh-deepseek-web-free
 
-> **功能描述**：把 DeepSeek 网页版桥接进 DSH：不花 API 额度就能跑短上下文对话、工作流与技能包，直接发图片也能免费识图。带悬浮球与侧边栏，在网页面板内的官方 chat.deepseek.com 页面登录一次后长期保持登录，设置页与两个面板入口共用同一份登录状态；正文任意文字右键即可投送到网页端输入框，投送前自动清空原输入框，不用再跳转、复制粘贴。适配 DSH 内核 0.2.2-rc.1。
+> **功能描述**：仅保留 DSH 内悬浮球与侧边栏打开官方 chat.deepseek.com 网页面板；1.0.44 起已移除 DSH 内直接对话功能。适配 DSH 内核 0.2.2-rc.1。
 >
-> **English**: Bridges the DeepSeek web client into DSH, so short-context conversations, workflows and skill packs run without an API key, and a picture pasted in DSH gets read for free. Ships a floating ball plus sidebar; sign in once on the official chat.deepseek.com page inside the DSH web panel, and the settings page, the sidebar tab and the floating ball share one login state. A right-click action sends any selected text into the web input after clearing it, so no more tab switching or manual pasting. Adapts DSH kernel 0.2.2-rc.1.
+> **English**: Only the floating ball and sidebar that open the official chat.deepseek.com web panel remain; in-DSH chat was removed in 1.0.44. Adapts DSH kernel 0.2.2-rc.1.
 
 
-**把 DeepSeek 网页端接入 DeepSeek Harness，并在对话界面内嵌网页面板 —— `y-wi/dsh-deepseek-web` 的 fork**
+**仅保留 DSH 悬浮球与侧边栏打开官方 chat.deepseek.com 网页面板 —— `y-wi/dsh-deepseek-web` 的 fork**
 
 [English](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/docs/README.en.md) · [安装](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/docs/INSTALL.md) · [npm](https://www.npmjs.com/package/dsh-deepseek-web-free) · [CHANGELOG](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/CHANGELOG.md)
 
@@ -20,19 +20,24 @@
 <h3>
 请严格遵循相关使用政策，禁止将此项目用于反代等破坏系统正常运行的行为，仅限个人学习使用
 </h3>
+> [!CAUTION]
+> **停用公告（2026-11-17，中文）**：2026-11-17 作者实测账号因违反用户使用规范被禁言至 2026-11-20 16:21。1.0.44 起已删除在 DSH 中直接选 DeepSeek Web 模型对话的功能，只保留悬浮球与侧边栏打开官方 chat.deepseek.com 网页面板。请勿再用旧版本复用网页登录态发起对话。本插件不加速也不绕过任何风控，使用后果由使用者自行承担，作者与本项目不承担任何责任。适配 DSH 内核 0.2.2-rc.1。
+>
+> **Deprecation notice (2026-11-17, English)**: on 2026-11-17 the author observed a real account ban for violating the usage policy, muted until 2026-11-20 16:21. Starting with 1.0.44, selecting DeepSeek Web as a model for in-DSH chat has been removed; only the floating ball and sidebar that open the official chat.deepseek.com web panel remain. Do not use older versions to reuse a web login session to start chats. This plugin neither accelerates nor bypasses any risk control; use is at your own risk, and the author and this project accept no responsibility. Adapts DSH kernel 0.2.2-rc.1.
+
 
 </div>
 
-非官方 Provider。本仓库开放 Harness **集成层与传输层**；协议兼容由随包分发的预编译 WebAssembly 提供。
+非官方网页面板插件。本仓库只保留 DSH 客户端面板集成层；1.0.44 起已移除 DSH 内直接对话与模型提供方能力。
 
 本项目与 DeepSeek **无隶属或背书关系**。使用你自己的 DeepSeek 账号。插件不会绕过 CAPTCHA、WAF 或账号访问控制；日常登录直接在 DSH 网页面板内的官方 chat.deepseek.com 页面完成，交互式验证也由该页面承接（隔离浏览器登录仅作为 CLI / TUI 与 `/auth/login` 调用的备用通道保留）。
 
 > [!WARNING]
 > **免责声明（务必先读）**
 >
-> 本插件只是为了**让你在 DSH 里直接用 DeepSeek 网页端更方便**：它复用你**自己的** DeepSeek 网页账号登录态来过模型请求，也可以把网页面板嵌进 DSH 侧栏 / 悬浮球里直接对话。它**不加速、不绕过**任何风控，也不承诺长期可用。面板加载时会写入一个 localStorage 标记（`closeUnsafeEnvWarn`）关闭网页端「使用环境异常」这条前端提示，仅隐藏提示文案，不改变也不绕过账号校验、人机验证或风控判定。
+> 本插件**只用于在 DSH 侧栏 / 悬浮球里打开官方 DeepSeek 网页面板**：面板加载时会写入一个 localStorage 标记（`closeUnsafeEnvWarn`）关闭网页端「使用环境异常」这条前端提示，仅隐藏提示文案，不改变也不绕过账号校验、人机验证或风控判定。1.0.44 起已不再提供「把网页端当模型」「在 DSH 内直接对话」「图片识图」等能力；右键投送（选中文字复制到 DeepSeek 网页输入框）仍保留。
 >
-> **使用网页端能力可能存在账号风险**（包括但不限于：被限流、被临时或永久封禁、会话异常、页面行为变化导致功能失效）。**由此产生的任何后果由使用者自行承担，本项目与作者不承担任何责任**，也不提供任何形式的担保。请自行评估风险后再决定是否登录使用。
+> **账号风险已发生真实禁言案例**：2026-11-17 作者实测账号因违反用户使用规范被禁言至 2026-11-20 16:21。使用网页端登录态于第三方客户端可能违反 DeepSeek 服务条款，可能导致限流、冻结或封禁。**由此产生的任何后果由使用者自行承担，本项目与作者不承担任何责任**，也不提供任何形式的担保。请勿再用旧版本复用网页登录态发起对话；请自行评估风险后再决定是否使用网页面板。
 >
 > 本项目与 DeepSeek 无隶属或背书关系，请遵守 DeepSeek 的服务条款与使用政策。
 
@@ -52,7 +57,7 @@
 | 不再吞掉上游错误 | 服务端 SSE `hint` 带 `type:"error"`（如 `finish_reason:"backend_err"`）时，原来返回**空消息并当作成功**，毒化历史、下一轮报 `invalid message id`；现在直接抛出可见错误 |
 | 修会话列表空 | 改名后遗留 `pathname.slice(34)` 硬编码 —— 34 是旧前缀长度，新前缀长 39，切出 `"sions"` 导致所有 sessions 请求 404 |
 
-**保持不变的部分（有意为之，勿改）**：`provider` id 仍是 `deepseek-web`；浏览器 profile 目录仍用旧名 `browser-profiles/dsh-deepseek-web`、缓存目录仍用 `cache/dsh-deepseek-web/browser` —— 改名会导致已登录用户丢失登录态。
+**保持不变的部分（有意为之，勿改）**：`provider` id 仍是 `deepseek-web`（仅为历史常量名，1.0.44 不再注册任何 DSH LLM provider/model）；浏览器 profile 目录仍用旧名 `browser-profiles/dsh-deepseek-web`、缓存目录仍用 `cache/dsh-deepseek-web/browser` —— 改名会导致已登录用户丢失登录态。
 
 ## 安装
 
@@ -66,7 +71,7 @@ dsh web
 
 > **桌面端（desktop profile）**：DSH 桌面客户端的 desktop profile 由 Electron 独占管理，`dsh plugin --profile desktop add` 会被 CLI 直接拒绝并提示 `profile "desktop" is managed exclusively by the Electron application`。桌面端请在插件市场安装，或由宿主管理 `~/.dsh/profiles/desktop/package.json` 的 `dependencies` 与 `dsh.profile.bundles` 后再用 pnpm 安装；上面的 `--profile web` 命令只适用于 `dsh web` 实验环境，Web profile 缺 better-sidebar 等宿主插件，装了也不会显示面板。
 
-然后到 **设置 → DeepSeek Web → 打开面板登录**（或直接打开侧边栏 / 悬浮球面板），在面板内官方 chat.deepseek.com 页面完成登录，插件会把 token 自动写回 Host 凭据库。确认 Provider `deepseek-web` 出现，模型 `default` 可见（1.0.31 起不再提供独立的 Expert 模型；历史配置里的 `expert` 会自动归一到 `default`）。
+然后到 **设置 → DeepSeek Web → 打开面板登录**（或直接打开侧边栏 / 悬浮球面板），在面板内官方 chat.deepseek.com 页面完成登录，插件会把 token 自动写回 Host 凭据库。1.0.44 起 DSH 模型列表中不再出现 `deepseek-web` provider 或 `default` 模型；「确认 Provider 出现 / 模型可见」仅适用于旧版本。
 
 DSH / Cordis / React 由运行时 `$DSH_HOME/profiles/node_modules` 提供，不会在插件目录再装一份。
 
@@ -120,51 +125,17 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 
 </details>
 
-## 能力
-
-（截图资源只在 GitHub 仓库中提供，npm 包内不含。）
-
-**网页面板（1.0.12 起）：** 除了「把网页端当模型」，插件还能把 `chat.deepseek.com` **直接嵌进 DSH 界面**——右侧栏标签页，或一颗可拖动、可拉伸的**鲸鱼悬浮球窗口**（位置与尺寸跨重启记忆、拖球时窗口跟随）。**登录只需一次**：首次在面板内的官方页面登录后，token 自动回写 Host 凭据库；设置页状态与侧边栏、悬浮球面板共用同一份登录状态，退出也一样同步，重启后无需重登。详见下文「网页面板」一节。
-
-<table>
-<tr>
-<td>
-<img src="https://raw.githubusercontent.com/loyalchiiina/dsh-deepseek-web-free/main/docs/assets/showcase-panel.png" alt="网页面板嵌在 DSH 右侧栏，与对话左右并列" width="430">
-<p><b>网页面板（侧边栏）。</b> 在 DSH 右侧栏直接打开真实的 <code>chat.deepseek.com</code>，与对话左右并列、互不遮挡；也可切换成悬浮球。</p>
-</td>
-</tr>
-<tr>
-<td>
-<img src="https://raw.githubusercontent.com/loyalchiiina/dsh-deepseek-web-free/main/docs/assets/showcase-panel-chat.png" alt="在面板内对话并搜索切换模型" width="720">
-<p><b>面板内对话 + 换模型。</b> 在面板里直接与 DeepSeek 对话，还能搜索并切换模型 / 分组。底部保留网页端原生的「深度思考」「智能搜索」开关。</p>
-</td>
-</tr>
-<tr>
-<td>
-<img src="https://raw.githubusercontent.com/loyalchiiina/dsh-deepseek-web-free/main/docs/assets/showcase-panel-toggle.png" alt="网页面板位置：悬浮球或侧边栏" width="582">
-<p><b>位置切换。</b> 悬浮球（可拖动、可拉伸的鲸鱼窗口）/ 侧边栏，一键切换。</p>
-</td>
-</tr>
-<tr>
-<td>
-<img src="https://raw.githubusercontent.com/loyalchiiina/dsh-deepseek-web-free/main/docs/assets/showcase-panel-settings.png" alt="DeepSeek Web 设置页：登录、诊断、网页面板" width="470">
-<p><b>设置页。</b> 打开面板登录、诊断、启用网页面板、选择位置、立即打开；登录状态与侧边栏 / 悬浮球面板同步。（截图为 1.0.41 界面，1.0.42 起登录按钮改为「打开面板登录」、状态读取改以宿主持久凭据为准。）</p>
-</td>
-</tr>
-</table>
-
-| 能力 | 说明 |
-| --- | --- |
-| DSH 原生工具 | 将 DeepSeek 网页端接入 Harness；插件把模型输出转成工具请求。FS / Shell / MCP / 审批由 Harness 执行 |
-| 网页搜索 | 始终开启官方网页端 Web Search；不是 DSH `web_search` |
-| 预构建 WASM | 安装无需 Rust / wasm-pack；token 与 cookie **不进入** WASM |
-| 网页面板 | 在 DSH 界面内以侧边栏 tab 或鲸鱼悬浮球直接打开 `chat.deepseek.com`；登录态由 Host 侧凭据自动注入，免二次登录 |
-| 图片输入 | 直接在 DSH 发图，插件读取图片经网页端 `upload_file` 上传、`fetch_files` 轮询就绪，随消息以 `ref_file_ids` 发送，由 DeepSeek 完成识图并回传；支持 PNG / JPEG / WebP / GIF，单张上限 5 MB |
-| 选中文字右键 | 会话里选中文字后右键，菜单多出「复制」与「复制到 DeepSeek 网页」；按位置偏好自动打开悬浮球或侧边栏，先清空 DeepSeek 输入框再写入，并自动关掉风险提示弹窗 |
-
-详见 [docs/remote-sessions.md](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/docs/remote-sessions.md)。
 
 ## 网页面板（侧边栏 / 悬浮球）
+
+![网页面板嵌在 DSH 右侧栏](https://raw.githubusercontent.com/loyalchiiina/dsh-deepseek-web-free/main/docs/assets/showcase-panel.png)
+
+![官方网页面板](https://raw.githubusercontent.com/loyalchiiina/dsh-deepseek-web-free/main/docs/assets/showcase-panel-chat.png)
+
+![网页面板位置：悬浮球或侧边栏](https://raw.githubusercontent.com/loyalchiiina/dsh-deepseek-web-free/main/docs/assets/showcase-panel-toggle.png)
+
+![DeepSeek Web 设置页：网页面板](https://raw.githubusercontent.com/loyalchiiina/dsh-deepseek-web-free/main/docs/assets/showcase-panel-settings.png)
+
 
 面板有两种形态，在 设置 → DeepSeek Web → 网页面板 → 位置 里切换：
 
@@ -179,7 +150,7 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 
 
 
-除了把 DeepSeek 网页当模型用，插件还能在 DSH 界面里**直接打开 DeepSeek 网页本身**：屏幕边上挂一颗鲸鱼悬浮球，点开就是真实的 `chat.deepseek.com` 页面，可以直接在 DSH 里和网页端对话。
+插件现在只在 DSH 界面里打开真实 `chat.deepseek.com` 网页面板；1.0.44 起不再把网页端当模型、不再提供 DSH 内直接对话。
 
 ### 打开方式
 
@@ -201,16 +172,6 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 | 关闭窗口 | 只隐藏不卸载（`visibility:hidden`，不用 `display:none`，否则 Electron 停合成 → 再开黑屏），网页状态与草稿保留；切换位置或关闭面板时才释放 guest |
 | 鲸鱼图标 | 官方 DeepSeek 标志，`currentColor` 上色：浅色主题黑、深色主题白 |
 
-### 选中文字右键菜单（1.0.34 起，纯客户端）
-
-在会话消息里选中文字后右键，弹出的不再是宿主原生那条只有「复制」的系统菜单，而是插件渲染的同款浅色菜单（Windows 11 风格，8px 圆角 / 32px 行高），两项：
-
-- **复制**：写入系统剪贴板，提示「已复制」。
-- **复制到 DeepSeek 网页**：按 设置 → DeepSeek Web → 网页面板 → 位置 打开对应界面，等页面就绪后把选中文字**清空式写入** DeepSeek 输入框（不追加）。
-
-▶ **[观看效果视频：选中文字 → 右键 → 复制到 DeepSeek 网页（MP4）](https://github.com/loyalchiiina/dsh-deepseek-web-free/releases/download/v1.0.35/right-click-copy-to-deepseek.mp4)**
-
-细节：位置=悬浮球 → 自动展开悬浮球窗口（窗口收起/隐藏但 webview 仍挂载也会展开）；位置=侧边栏 → 打开/切到侧边栏 DeepSeek 标签页（已在则不重复开）；打开前先让另一面退出并留 200ms 释放共享会话；会顺手点掉 DeepSeek 风险提示弹窗（加载后立即点一次，再以 150ms 节奏观察 8 秒）；结果提示：成功「已复制到 DeepSeek 网页输入框」，22 秒内没等到页面就绪「打开 DeepSeek 网页超时，请先手动打开面板再试」，写入失败自动回退剪贴板并提示 Ctrl+V。只在**有选中文字**时接管右键，未选中时右键行为不变。这里的「顺手点掉风险提示弹窗」只作用于右键打开的面板；1.0.42 起面板加载时还会预写 `closeUnsafeEnvWarn` 标记，从源头关闭「使用环境异常」提示，两者互不影响。
 
 ### 只有一个 webview 活着（切换与重挂）
 
@@ -242,76 +203,16 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 
 ### 与既有能力共存
 
-原有功能全部保留、互不影响：provider `deepseek-web` 的模型列表（`default`）、DeepThink 思考开关、网页搜索、侧栏会话接续、派生到工作区。隔离浏览器登录与独立 profile 仍保留给 CLI / TUI 与 `/auth/login` 备用通道，不再是日常登录主路径。
+1.0.44 起本插件只保留网页面板：provider `deepseek-web` 模型列表、思考开关、网页搜索、侧栏会话接续、派生到工作区、图片识图均已移除。隔离浏览器登录与独立 profile 不再由本插件装载补丁启用。
 
-## 模型
 
-| ID | 名称 | 输入模态 | 网页原生搜索 |
-| --- | --- | --- | --- |
-| `deepseek-web/default` | DeepSeek Web | 文本 + 图片 | 每轮开启 |
+## 装载行为
 
-思考为 `on` / `off`（默认 `on`）。`default` 的每一轮（含续写和 `/clean`）都会打开网页搜索，插件设置里关不掉。引用来源会出现在时间线上；不会注册 DSH `web_search` 提供方。
-
-**支持图片输入**：在 DSH 里直接发图，插件会把图片读取为附件并经网页端上传（`upload_file` + `fetch_files` 轮询），随消息以 `ref_file_ids` 一起发送，由 DeepSeek 网页端完成识图后把结果回传。支持 PNG / JPEG / WebP / GIF，单张上限 5 MB。
-
-## 装载行为与可配置项
-
-### ⚠️ 装载补丁会改默认模型
-
-`cordis.patch.yml` 不只有「插入插件」，它还有一条**覆盖宿主默认模型**的补丁：
-
-```yaml
-- id: agent-default-model
-  config:
-    provider: deepseek-web
-    model: default
-```
-
-也就是说：**装上本插件后，新会话的默认模型会变成 `deepseek-web/default`。** 如果你此前在设置里**显式保存过**默认模型，那份保存值会胜过这里的 bundle 默认值（补丁注释里写明 "A saved agent-default-model setting, when present, still wins over this bundle value"）；如果你从没手动设过，就会落到 `deepseek-web/default`。不想改默认模型的话，装完到设置里重新选一次即可。
-
-> 这条是**上游行为，本 fork 原样承袭**（上游 `packages/plugin/cordis.patch.yml` 同样有这一块）。注意：某些本地安装的上游副本（如 `profiles/web/node_modules/dsh-deepseek-web`）被人为改过，注释写着 "Locally adjusted by DSH … upstream agent-default-model override stripped"，把这段删了 —— 那是本地改的，不是上游发布态。**判断"插件装完会不会改默认模型"，要看你实际安装的那份 `cordis.patch.yml`，别照着别处的副本推断。**
-
-### patch 同时插入 provider 与 TUI 两个条目
-
-上游的 `cordis.patch.yml` 除了 provider，还会顺带插入一条 TUI 条目。本 fork 与上游结构一致：
-
-```yaml
-- insert:
-    - id: llm-deepseek-web-free
-      name: dsh-deepseek-web-free
-    - id: deepseek-web-free-tui
-      name: dsh-deepseek-web-free/tui
-      inject: [deepSeekWeb]
-```
-
-第二条让 `lib/tui.js`（注册 `deepSeekWebTui` 服务、提供 `/deepseek-web` 命令与 TUI 命令树）在 TUI profile 里**自动挂载**。
-
-> **历史（v1.0.9 及更早）**：1.0.6 改包名时只改出第一条 insert，第二条被漏掉——`exports["./tui"]` 与 `lib/tui.js` 都在，但**永远不会被挂载**（`deepSeekWeb` 服务在 TUI 里不存在）。v1.0.10 补回。这个 bug 的特征是「文件在、导出在、插件启动正常，只是那个子能力静默消失」，任何"文件存在性"检查都会放行。
-
-### 用户可配置字段
-
-`Config` schema（`lib/index.js`，Schemastery `z.object`，全部字段标 `.volatile()`）暴露这些：
-
-| 字段 | 类型 / 取值 | 默认 | 说明 |
-| --- | --- | --- | --- |
-| `tokenEnv` | 字符串（`.role("credential-ref")`） | `DEEPSEEK_WEB_TOKEN` | 到 DSH 凭证存储里取 token 用的键名 |
-| `defaultModel` | `default`（历史配置里的 `expert` 自动归一到 `default`） | `default` | 新建会话用哪个模型 |
-| `thinking` | `enabled` \| `disabled` | `enabled` | DeepThink 推理 |
-| `streamIdleTimeoutMs` | 数字 | `180000` | SSE 空闲超时（毫秒） |
-| `maxToolProtocolBytes` | 数字 | `131072` | 单次工具协议块字节上限 |
-| `maxToolCallsPerTurn` | 数字，**须为 1..32 整数** | `16` | 每轮最多工具调用数；越界会抛 `maxToolCallsPerTurn must be an integer in 1..32` |
-| `maxProtocolRepairAttempts` | 数字 | `2` | 协议解析失败的修复重试次数 |
-| `maxToolResultBytes` | 数字 | `65536` | 单个工具结果回传上限 |
-| `browser.preferred` | `auto` \| `chrome` \| `edge` \| `brave` \| `chromium` \| `managed` | `auto` | 隔离浏览器登录用哪个浏览器；`managed` 表示由插件托管下载。仅 CLI / TUI 与 `/auth/login` 备用通道生效，面板内官方页面登录不涉及此项 |
-| `browser.allowManagedDownload` | 布尔 | `true` | 允许插件自行下载托管浏览器 |
-
-配置写坏时不会崩：`options()` 会保留上一次的好配置并打一条 `keeping last good configuration after invalid settings`。
-
-> 注：`nativeSearch` 虽然出现在内部默认值里，但**不在** `Config` schema 中 —— `resolveConfig` 里硬编码成 `"on"`，所以用户改不了，这与下面「模型」节的描述一致。
+1.0.44 起 `cordis.patch.yml` 只插入客户端网页面板 bundle 一条条目，不再覆盖宿主默认模型，也不再挂载 TUI 条目。旧版本里「装上本插件后新会话默认模型变成 `deepseek-web/default`」与「自动挂 `deepSeekWebTui`」的说明均已失效；请彻底退出 the agent harness 客户端再启动，让宿主重新读取补丁与 `package.json`。
 
 ## 命令
 
-斜杠命令不会把 `/…` 原文发给模型。
+1.0.44 起斜杠命令不再由本插件装载，以下条目仅保留作历史说明。
 
 - `/deepseek-web [status|login|logout|doctor]` — 账号相关
 - `/clean [message]` — 当前会话开关。打开后后续每一轮只发送你的原文（不含系统提示、工具、skills）。再执行一次 `/clean` 关闭。
@@ -322,7 +223,7 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 
 | 字段 | 取值 | 含义 |
 | --- | --- | --- |
-| `cloud` | `true` | 会把对话内容发到云端服务 |
+| `cloud` | `true` | 声明保留；1.0.44 起插件不再主动把 DSH 对话内容发到云端服务，仅用户主动打开官方网页面板时网页自身联网 |
 | `network` | `https://chat.deepseek.com` | **唯一**外联目标。插件不访问 `api.deepseek.com`，也不访问任何第三方域名 |
 | `offlineMode` | `false` | 不支持离线使用 |
 | `apiKeys[0].env` | `DEEPSEEK_WEB_TOKEN` | 凭证键名（`tokenEnv` 的默认值） |
@@ -335,24 +236,16 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 
 具体地：
 
-- **发出去的是什么**：你的消息文本、系统提示、工具定义（除非 `/clean` 打开）、以及 Harness 侧的工具结果，经 `chat.deepseek.com/api/v0/` 的 HTTPS/SSE 通道发给 DeepSeek 网页端。响应只回流到本机。
-- **不发出去的是什么**：插件**不**上传本地文件、不采集遥测、不内嵌任何分析 SDK。文件要想让模型看到，必须由 Harness 的读文件工具读成文本再进对话。
+- **发出去的是什么**：1.0.44 起插件不再把消息文本、系统提示、工具定义或工具结果发往 `chat.deepseek.com/api/v0/`；仅网页面板自身在用户主动打开时与官方网页端交互。响应只回流到本机。
+- **不发出去的是什么**：插件**不**上传本地文件、不采集遥测、不内嵌任何分析 SDK。1.0.44 起也不再把本地文件内容转成对话上下文发给网页端模型。
 - **本机留下了什么**：① DSH 凭证存储里的 token（键名 `DEEPSEEK_WEB_TOKEN`）；② 插件隔离浏览器 profile，位于 DSH 主目录下的 `browser-profiles/dsh-deepseek-web`（有意沿用旧名）；③ 浏览器缓存位于 `cache/dsh-deepseek-web/browser`。这三处之外不写盘。
-- **谁在执行**：DeepSeek Web 没有官方 function calling。插件只**解析**模型输出并转成工具请求；适配器**从不**执行 shell、读盘或 MCP —— 真正的执行在 Harness 侧，受 Harness 的审批门管控。
+- **谁在执行**：1.0.44 起插件不再注册 DSH 适配器、不再解析模型输出、不再生成工具请求；网页面板只是官方页面的原生展示。
 
-## 架构
-
-| 层 | 职责 |
-| --- | --- |
-| TypeScript 开源层 | HTTP、SSE、浏览器登录、凭证、DSH 适配器、工具桥、回放 |
-| 预编译 WASM 核心 | 协议兼容与 PoW |
-
-宿主侧 HTTP 路由挂在 `/plugins/dsh-deepseek-web/` 前缀下（`auth/login`、`auth/logout`、`auth/cancel`、`auth/status`、`auth/import`、`webpanel/token`、`doctor`、`account`、`fork`、`sessions`）。这些是插件内部路由，不构成对外 API；1.0.43 起每条路由的 handler 入口先过 `ctx.connection.requestRejection(req)`（DSH 框架层准入），与 `trustedPluginRequest` 的 loopback + 同源校验并列，未获准入返回 401/403、gate 缺席或抛错返回 503。
 
 ## 安全
 
 - 不要打印 `.credentials.yaml`、Bearer token、CDP 地址或浏览器配置目录的绝对路径（`lib/bin.js` 出错时走 `redactSensitiveText` 后再写 stderr）
-- 日常登录在 DSH 网页面板的内存分区内完成；仅 CLI / TUI 与 `/auth/login` 备用通道使用插件隔离 profile
+- 日常登录在 DSH 网页面板的内存分区内完成；1.0.44 起 CLI / TUI 与 `/auth/login` 备用通道不再由装载补丁启用
 - 凭证只写入 DSH 凭证存储
 - 宿主 HTTP 路由 1.0.43 起接入 `ctx.connection.requestRejection(req)` 框架层准入，与原有 `trustedPluginRequest` 双层校验并列；精确 `webServer.register` 路由原先绕过 /api 准入 fence 的问题已修复
 
@@ -382,15 +275,15 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 
 ## 与上游的差异（本插件维护者新增）
 
-本插件基于上游 [y-wi/dsh-deepseek-web](https://github.com/y-wi/dsh-deepseek-web) 1.0.3 基线。相对上游，以下能力由**本插件维护者自行新增/改造**（非上游原有）：
+本插件基于上游 [y-wi/dsh-deepseek-web](https://github.com/y-wi/dsh-deepseek-web) 1.0.3 基线。相对上游，以下为历史新增/改造；1.0.44 起仅第一项「打开官方网页面板的客户端入口」仍保留：
 
-- **内嵌网页面板**：侧栏标签页 + 鲸鱼悬浮球（登录一次，双向同步）——维护者新增。
-- **网页搜索（智能搜索）全程开启**：`nativeSearch` 固定为始终开启，主对话每轮都带官方网页搜索，插件内不可关闭；不依赖上游「Expert 才能搜」的旧逻辑。
-- **移除 Expert（专家）模式**：原作者的 Expert 分支依赖的网页端行为已变更，不再适用于最新 chat.deepseek.com 与最新 DSH 版本，模型列表不再提供 Expert。
-- **图片输入**（1.0.31 起）：发送图片会先上传到 DeepSeek 再随消息发送，模型可识图。
-- 持续适配最新网页端与最新 DSH 版本。
+- **内嵌网页面板**：侧栏标签页 + 鲸鱼悬浮球（登录一次，双向同步）——维护者新增，1.0.44 起为唯一保留能力。
+- **网页搜索（智能搜索）全程开启**：历史能力；1.0.44 起已移除，插件内不再发起对话或网页搜索。
+- **移除 Expert（专家）模式**：历史能力；1.0.44 起整个模型提供方已移除。
+- **图片输入**（1.0.31 起）：历史能力；1.0.44 起已移除，插件不再上传图片或识图。
+- 1.0.44 起移除 DSH 内直接对话、模型提供方、网页搜索编排、图片识图，只保留打开官方网页面板与右键投送（选中文字复制到 DeepSeek 网页输入框）的客户端入口。
 
-上游原有能力：把 DeepSeek 网页端当作 LLM 模型使用（基础文本对话）。
+上游原有能力：把 DeepSeek 网页端当作 LLM 模型使用（基础文本对话）。1.0.44 起本插件已移除该能力，仅保留官方网页面板的打开入口。
 「图片输入」实现思路参考 [agent2api](https://github.com/aimod-cc/agent2api)，本插件为独立实现，未复制其代码。
 
 ## 文档
@@ -403,8 +296,8 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 
 ## 免责声明
 
-- **用途**：本插件仅为方便用户在 DSH 内直接使用 DeepSeek 网页端（当模型、或打开网页面板对话），不提供任何 DeepSeek 官方未开放的加速、绕过或批量能力。
-- **账号风险**：把网页端登录态用于第三方客户端**可能违反 DeepSeek 服务条款**，可能导致账号被限流、被冻结或封禁。请使用你自己的账号并自行评估风险。
+- **用途**：本插件仅为方便用户在 DSH 内打开官方 DeepSeek 网页面板（仅面板，不再当模型、不再在 DSH 内对话），不提供任何 DeepSeek 官方未开放的加速、绕过或批量能力。
+- **账号风险**：已发生真实禁言案例（2026-11-17 作者实测账号因违反用户使用规范被禁言至 2026-11-20 16:21）。把网页端登录态用于第三方客户端可能违反 DeepSeek 服务条款，可能导致账号被限流、被冻结或封禁。请勿再用旧版本复用网页登录态发起对话；请使用你自己的账号并自行评估风险。
 - **责任**：作者与贡献者**不对任何直接或间接损失承担责任**（包括但不限于账号损失、数据丢失、服务中断）。软件按「现状」提供，不附带任何明示或暗示担保。
 - **合规**：请遵守所在地区法律法规与 DeepSeek 的服务条款；若你不同意上述条款，请勿安装或使用本插件。
 

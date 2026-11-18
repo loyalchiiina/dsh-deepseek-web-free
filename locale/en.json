@@ -1,7 +1,7 @@
 {
   "name": "dsh-deepseek-web-free",
   "meta": {
-    "title": "DeepSeek Web Provider",
-    "description": "Unofficial DeepSeek Web plugin: use chat.deepseek.com as a model source and chat inside the embedded page (sidebar tab or whale floating window) after a single sign-in; right-click selected text to copy it into the web composer."
+    "title": "DeepSeek Web Panel",
+    "description": "Only the floating ball and sidebar open the official chat.deepseek.com web panel; in-DSH chat was removed in 1.0.44. WARNING: a real account ban was observed; do not reuse the web session to start chats through this plugin (removed in 1.0.44)."
   }
 }

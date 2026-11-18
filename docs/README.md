@@ -2,6 +2,11 @@
 
 # dsh-deepseek-web-free
 
+**本 fork 1.0.44 起仅面板**：仅保留悬浮球与侧边栏打开官方 `chat.deepseek.com` 网页面板，已删除在 DSH 中直接选 DeepSeek Web 模型对话的功能（含 provider 模型注册、RemoteSessionService、会话派生与命令链）；选中文字右键投送到网页面板的功能仍保留。
+
+> ⚠️ **停用公告（2026-11-17）**：2026-11-17 作者实测账号因违反用户使用规范被禁言至 2026-11-20 16:21；1.0.44 起已删除在 DSH 中直接选 DeepSeek Web 模型对话的功能，只保留悬浮球与侧边栏打开官方 chat.deepseek.com 网页面板；请勿再用旧版本复用网页登录态发起对话。本插件不加速也不绕过任何风控，使用后果由使用者自行承担，作者与本项目不承担任何责任。
+> ⚠️ **Deprecation notice (2026-11-17)**: On 2026-11-17 the author's own test account was muted until 16:21 on 2026-11-20 for violating the user terms; starting with 1.0.44 the ability to chat by selecting a DeepSeek Web model directly inside DSH has been removed, leaving only the floating ball and sidebar shortcuts that open the official chat.deepseek.com web panel; do not reuse an old version to start chats with a web login session.
+
 **将 DeepSeek 网页端接入 DeepSeek Harness —— `y-wi/dsh-deepseek-web` 的 fork**
 
 [English](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/docs/README.en.md) · [中文](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/docs/README.md) · [安装](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/docs/INSTALL.md) · [npm](https://www.npmjs.com/package/dsh-deepseek-web-free) · [根 README](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/README.md)
@@ -31,11 +36,11 @@
 | npm 包名 | `dsh-deepseek-web` | **`dsh-deepseek-web-free`** |
 | GitHub | `y-wi/dsh-deepseek-web` | `loyalchiiina/dsh-deepseek-web-free` |
 | 基线版本 | 1.0.3 | 1.0.3 起 fork，当前见 [CHANGELOG](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/CHANGELOG.md) |
-| `provider` id | `deepseek-web` | `deepseek-web`（**不变**） |
-| 模型 id | `default`（历史配置里的 `expert` 自动归一） | `default`（1.0.31 起不再提供独立 Expert） |
+| `provider` id | `deepseek-web` | 1.0.44 起**不再注册**（`deepseek-web` 仅保留为历史常量名） |
+| 模型 id | `default`（历史配置里的 `expert` 自动归一） | 1.0.44 起**不再注册为 DSH 模型**（`default` 仅历史配置名） |
 | 浏览器 profile 目录 | `browser-profiles/dsh-deepseek-web` | **同名不变**（改名会丢登录态） |
 | `cordis.patch.yml` 条目 | `id: llm-deepseek-web` + `id: deepseek-web-tui`（两条 insert） | 只有 `id: llm-deepseek-web-free` 一条，**缺 TUI 条目**（见下文第 8 条） |
-| 默认模型覆盖 | 含 `- id: agent-default-model` | **同样含**（原样承袭，非本 fork 新增） |
+| 默认模型覆盖 | 含 `- id: agent-default-model` | **1.0.44 起不再覆盖**：本 fork 的 `cordis.patch.yml` 只插入客户端 bundle 条目，不含 `agent-default-model` |
 
 上游包名 `dsh-deepseek-web` 已被原作者占用，无法同名发布，所以本 fork 只能改名到 `-free`。
 
@@ -47,7 +52,7 @@
 4. **不再吞掉上游错误** —— 服务端 SSE `hint` 事件带 `type:"error"`（如 `finish_reason:"backend_err"`）时，上游返回空消息并当作成功，毒化会话历史、下一轮报 `invalid message id`。现在直接抛可见的 `DEEPSEEK_WEB_HTTP` 并带服务端原文。
 5. **修「登录成功但会话列表空」** —— 改名后遗留硬编码 `url.pathname.slice(34)`，34 恰是旧路由前缀长度，新前缀长 39，切出 `"sions"` 导致所有 sessions 请求落到兜底 404。改为 `slice(SESSIONS_PATH.length)`。
 6. **侧边栏浮层背景改不透明** —— 宿主用的是「半透明底 + backdrop-filter blur」两件套，插件挂在 `document.body` 上装不了 backdrop-filter，抄半透明 token 会透出底下内容。改用不透明的 `var(--dsw-alias-bg-layer-3)`。
-7. **⚠️ 装载补丁会覆盖默认模型（上游行为，原样承袭）** —— `cordis.patch.yml` 含一条 `- id: agent-default-model` / `config: {provider: deepseek-web, model: default}`。装上后**新会话默认模型变成 `deepseek-web/default`**；你若曾显式保存过默认模型，保存值优先。不想改的话装完到设置里重选一次。详见[根 README](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/README.md#装载行为与可配置项)。
+7. **⚠️ 1.0.44 起不再改变宿主默认模型** —— 旧版本的 `cordis.patch.yml` 曾含 `- id: agent-default-model` / `config: {provider: deepseek-web, model: default}`，装上后新会话默认模型会变成 `deepseek-web/default`；该行为已在本 fork 1.0.44 移除，本 fork 不再覆盖宿主默认模型。详见[根 README](https://github.com/loyalchiiina/dsh-deepseek-web-free/blob/main/README.md#装载行为与可配置项)。
 8. **⚠️ 已知问题：patch 缺 TUI 条目** —— 上游 patch 有两条 `insert` 条目（`llm-deepseek-web` + `deepseek-web-tui`），本 fork 改名后只剩一条。本包仍带 `./tui` 导出，但**不会自动挂载**，要在 TUI profile 里手工补一条 `id: dsh-deepseek-web-free-tui` / `name: dsh-deepseek-web-free/tui` / `inject: [deepSeekWeb]`。只用 Web 界面则不受影响。**1.0.9 只改文档，未修此问题。**
 
 ## 安装
@@ -60,7 +65,7 @@ dsh plugin --profile web peers check
 dsh web
 ```
 
-设置 → DeepSeek Web → **打开面板登录**。确认 Provider `deepseek-web` 出现，模型 `default` 可见（1.0.31 起不再提供独立 Expert）。
+设置 → DeepSeek Web → **打开面板登录**。1.0.44 起 DSH 模型列表不再出现 `deepseek-web` provider / `default` 模型；仅保留悬浮球与侧边栏网页面板入口。
 
 DSH / Cordis / React 由运行时 `$DSH_HOME/profiles/node_modules` 提供，不会在插件目录再装一份。
 
@@ -99,7 +104,7 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 <tr>
 <td>
 <img src="https://raw.githubusercontent.com/loyalchiiina/dsh-deepseek-web-free/main/docs/assets/showcase-panel-settings.png" alt="DeepSeek Web 设置页：打开面板登录、诊断、网页面板" width="720">
-<p><b>在网页面板内登录。</b> 1.0.42 起在 DSH 网页面板（侧边栏或悬浮球）里的官方 <code>chat.deepseek.com</code> 页面登录一次，设置页与两个面板入口共用同一份宿主凭据。截图为 1.0.41 界面，1.0.42 起登录按钮改为「打开面板登录」、状态读取改以宿主持久凭据为准。</p>
+<p><b>仅面板设置页。</b> 1.0.44 起该截图只说明「设置页 → 打开官方网页面板」这一入口：面板内官方 <code>chat.deepseek.com</code> 页面登录一次，设置页、侧边栏与悬浮球共用同一份宿主凭据；DSH 内不再出现可选 DeepSeek Web 模型，也不能在 DSH 里对话。截图沿用既有 1.0.41 界面效果图，1.0.42 起登录按钮改为「打开面板登录」、状态读取改以宿主持久凭据为准。</p>
 </td>
 </tr>
 <tr>
@@ -144,9 +149,9 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 
 ## 网页面板（侧边栏 / 悬浮球）与右键复制（1.0.34 起）
 
-插件还能把 `chat.deepseek.com` 直接嵌进 DSH：右侧栏标签页，或可拖动/可拉伸的鲸鱼悬浮球窗口；登录一次，设置页与面板共用同一份宿主凭据（1.0.42 起登录也在这个面板内的官方页面完成）。
+1.0.44 起插件只保留把官方 `chat.deepseek.com` 网页面板嵌进 DSH：右侧栏标签页，或可拖动/可拉伸的鲸鱼悬浮球窗口；登录一次，设置页与面板共用同一份宿主凭据（1.0.42 起登录也在这个面板内的官方页面完成）。
 
-- **选中文字右键**：会话里选中文字后右键，菜单为「复制 + 复制到 DeepSeek 网页」；后者按设置里的位置偏好自动打开悬浮球或侧边栏，先清空 DeepSeek 输入框再写入，并自动关掉风险提示弹窗。
+- **选中文字右键（1.0.44 起仍保留）**：会话里选中文字后右键，菜单为「复制 + 复制到 DeepSeek 网页」；后者按设置里的位置偏好自动打开悬浮球或侧边栏，先清空 DeepSeek 输入框再写入，并自动关掉风险提示弹窗。
 - ▶ [观看效果视频（MP4）](https://github.com/loyalchiiina/dsh-deepseek-web-free/releases/download/v1.0.35/right-click-copy-to-deepseek.mp4)
 - 同一时刻只保留一个网页面板 webview；切换位置先退后开，避免两个 guest 抢同一 DeepSeek 会话导致白屏/发不出去。
 

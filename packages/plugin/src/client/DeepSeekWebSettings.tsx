@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { Button, StateDot } from '@deepseek-ai/dsh-client-ui-primitives'
-import { CANCEL_PATH, DOCTOR_PATH, LOGOUT_PATH, pluginFetch, STATUS_PATH, WEBPANEL_TOKEN_PATH } from './api.ts'
+import { CANCEL_PATH, DOCTOR_PATH, LOGIN_PATH, LOGOUT_PATH, pluginFetch, STATUS_PATH, WEBPANEL_TOKEN_PATH } from './api.ts'
 import type { DeepSeekWebSettingsKey } from './locales.ts'
 import type { ClientAuthState } from './state.ts'
 import { openWebPanel } from './webpanel-bus.ts'
@@ -322,7 +322,14 @@ export function DeepSeekWebSettings(props: DeepSeekWebSettingsProps): JSX.Elemen
             >
               {busy ? t('working') : t('doctor')}
             </Button>
+            <Button variant="ghost" size="sm" disabled={busy} onClick={() => void run(async () => {
+              await pluginFetch(LOGIN_PATH, { method: 'POST', body: JSON.stringify({ resetProfile: false }) })
+            })}
+            >
+              {busy ? t('working') : t('isolatedSignIn')}
+            </Button>
           </div>
+          <p style={metaStyle}>{t('isolatedSignInHint')}</p>
           {doctor ? <pre style={outputStyle}>{doctor}</pre> : null}
         </li>
         <li style={rowCardStyle}>

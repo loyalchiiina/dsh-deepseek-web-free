@@ -186,7 +186,7 @@ class StreamSink {
     this.gate = new CitationStreamGate()
   }
 
-  finish(calls: BridgeToolCall[], replay: DeepSeekWebReplayV1): void {
+  finish(calls: BridgeToolCall[], replay: DeepSeekWebReplayV1, strictEmpty = false): void {
     this.maybeEmitSearchCard()
     if (calls.length > 0) {
       this.closeReasoning()
@@ -211,6 +211,16 @@ class StreamSink {
       this.ensure('text')
       this.visibleEmitted = true
       this.emit({ type: 'text-delta', index: this.textIndex!, text: flushed })
+    }
+    if (strictEmpty && !this.visibleEmitted && flushed.length === 0) {
+      // A turn with no visible text and no tool calls used to close as a normal
+      // "stop", leaving the host with a completed-but-silent turn. Surface it as
+      // a protocol error so the rebuild branch can retry once with a fresh chat
+      // session, and the user sees a concrete message instead of an empty reply.
+      throw new LlmError(
+        'DeepSeek Web returned an empty response (no visible reply and no tool calls). Re-sign in with the isolated browser from Settings if this persists.',
+        ERROR_CODES.PROTOCOL,
+      )
     }
     this.closeReasoning()
     this.closeText()
@@ -471,10 +481,14 @@ export class DeepSeekWebAdapter extends LlmAdapter {
         powHeader: await powHeaderPromise,
       })
       sink.flushTurn(remote.turn)
-      sink.finish(remote.calls, this.accept(remote.turn, options, config, accountHash, chatSessionId, remote.calls, systemHash, toolsHash).replay)
+      sink.finish(remote.calls, this.accept(remote.turn, options, config, accountHash, chatSessionId, remote.calls, systemHash, toolsHash).replay, true)
     } catch (error) {
       if (rebuilt) throw toLlm(error)
-      if (error instanceof DeepSeekWebError && (error.code === ERROR_CODES.REMOTE_SESSION || error.code === ERROR_CODES.PROTOCOL)) {
+      // completeChecked() wraps every client failure with toLlm(), so a protocol
+      // error reaches here as LlmError, not DeepSeekWebError. Match on the
+      // preserved code so the rebuild-and-retry branch stays reachable.
+      const failureCode = (error as { code?: string } | null)?.code
+      if (failureCode === ERROR_CODES.REMOTE_SESSION || failureCode === ERROR_CODES.PROTOCOL) {
         if (options.sessionId !== undefined) this.remotes.delete(options.sessionId)
         const session = await this.client.createSession(credential, options.signal)
         const remote = await this.completeWithRepair({
@@ -497,9 +511,10 @@ export class DeepSeekWebAdapter extends LlmAdapter {
           nativeSearch,
           config,
           sink,
+          powHeader: await powHeaderPromise,
         })
         sink.flushTurn(remote.turn)
-        sink.finish(remote.calls, this.accept(remote.turn, options, config, accountHash, session.chatSessionId, remote.calls, systemHash, toolsHash).replay)
+        sink.finish(remote.calls, this.accept(remote.turn, options, config, accountHash, session.chatSessionId, remote.calls, systemHash, toolsHash).replay, true)
         return
       }
       throw toLlm(error)

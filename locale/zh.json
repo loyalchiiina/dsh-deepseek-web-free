@@ -1,7 +1,7 @@
 {
   "name": "dsh-deepseek-web-free",
   "meta": {
-    "title": "DeepSeek 网页提供方",
-    "description": "非官方 DeepSeek 网页端插件：既能把网页端当模型用，也能在 DSH 内嵌网页面板直接对话（侧栏标签页 / 鲸鱼悬浮球），登录一次，设置页与面板共用同一份宿主凭据，选中会话文字右键即可复制进网页输入框。"
+    "title": "DeepSeek 网页面板",
+    "description": "仅通过悬浮球或侧边栏打开官方 chat.deepseek.com 网页面板；DSH 内直接对话功能已在 1.0.44 移除。⚠️ 作者已实测账号被禁言，请勿再通过本插件复用网页登录态发起对话（1.0.44 起已移除）。"
   }
 }

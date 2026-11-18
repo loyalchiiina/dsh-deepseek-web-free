@@ -1,13 +1,12 @@
 {
   "name": "dsh-deepseek-web-free",
-  "description": "Unofficial DeepSeek Web provider for DeepSeek Harness: use chat.deepseek.com as an LLM source AND embed the DeepSeek web page inside DSH (right sidebar tab or draggable whale floating window) with one-time sign-in shared by the settings page and both panel surfaces. Select conversation text and right-click to copy it straight into the embedded DeepSeek composer. 非官方 DeepSeek 网页端插件：既能把网页端当模型用，也能在 DSH 内嵌网页面板直接对话（侧栏标签页 / 鲸鱼悬浮球），登录一次，设置页与面板共用同一份宿主凭据；选中会话文字右键即可把内容复制到 DeepSeek 网页输入框。仅供个人方便使用，可能存在账号风险，作者不承担责任。",
-  "version": "1.0.43",
+  "description": "仅保留 DSH 内悬浮球与侧边栏打开官方 chat.deepseek.com 网页面板；1.0.44 起已移除 DSH 内直接对话功能。⚠️ 作者已实测账号被禁言，请勿再通过本插件复用网页登录态发起对话（1.0.44 起已移除）。使用后果由使用者自行承担，作者与本项目不承担任何责任。 Only the floating ball and sidebar that open the official chat.deepseek.com web panel remain; in-DSH chat was removed in 1.0.44. WARNING: a real account ban was observed; do not reuse the web session to start chats through this plugin (removed in 1.0.44). Use is at your own risk; the author and this project accept no responsibility.",
+  "version": "1.0.44",
   "keywords": [
     "dsh",
     "dsh-plugin",
     "deepseek-harness",
     "cordis-plugin",
-    "llm-provider",
     "deepseek-web",
     "webview",
     "sidebar-panel"
@@ -66,13 +65,10 @@
   ],
   "dsh": {
     "capabilities": [
-      "llm:adapter",
-      "network:egress",
-      "sessions:read",
-      "sessions:write"
+      "network:egress"
     ],
     "labels": [
-      "third-party-model-provider"
+      "web-panel-only"
     ],
     "plugin": true,
     "kind": "server",

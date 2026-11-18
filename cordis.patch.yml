@@ -1,14 +1,5 @@
-# Optional DeepSeek Web provider over the base composition. A saved
-# agent-default-model setting, when present, still wins over this bundle value.
-
-- id: agent-default-model
-  config:
-    provider: deepseek-web
-    model: default
+# Only the client bundle entry remains; the DSH-in-chat model provider was removed in 1.0.44 after a real account ban.
 
 - insert:
     - id: llm-deepseek-web-free
       name: dsh-deepseek-web-free
-    - id: deepseek-web-free-tui
-      name: dsh-deepseek-web-free/tui
-      inject: [deepSeekWeb]

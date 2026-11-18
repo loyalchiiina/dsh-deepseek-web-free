@@ -2,6 +2,9 @@
 
 # dsh-deepseek-web
 
+> ⚠️ **停用公告（2026-11-17）**：2026-11-17 作者实测账号因违反用户使用规范被禁言至 2026-11-20 16:21；1.0.44 起已删除在 DSH 中直接选 DeepSeek Web 模型对话的功能，只保留悬浮球与侧边栏打开官方 chat.deepseek.com 网页面板；请勿再用旧版本复用网页登录态发起对话。
+> ⚠️ **Deprecation notice (2026-11-17)**: On 2026-11-17 the author's own test account was muted until 16:21 on 2026-11-20 for violating the user terms; starting with 1.0.44 the ability to chat by selecting a DeepSeek Web model directly inside DSH has been removed, leaving only the floating ball and sidebar shortcuts that open the official chat.deepseek.com web panel; do not reuse an old version to start chats with a web login session. This page remains an archived upstream document and is kept as-is; the rest of it describes the old behavior and no longer applies. This plugin neither accelerates nor bypasses any risk control; use is at your own risk, and the author and this project accept no responsibility.
+
 > 📌 This page is the archived upstream (`y-wi/dsh-deepseek-web`) English README. This fork (`dsh-deepseek-web-free`, v1.0.42) signs in on the official chat.deepseek.com page inside the DSH web panel; see the repository root [README.md](../README.md) for current behavior, including login, the settings page and the 1.0.42 changelog.
 
 **Connect DeepSeek Web to DeepSeek Harness**
@@ -41,7 +44,7 @@ dsh plugin --profile web peers check
 dsh web
 ```
 
-Settings → DeepSeek Web → Sign in with DeepSeek. Confirm provider `deepseek-web` and models `default` / `expert`.
+Settings → DeepSeek Web → Sign in with DeepSeek. Starting with 1.0.44, no `deepseek-web` provider or `default` / `expert` model is registered; only the floating ball and sidebar web-panel entry remain.
 
 DSH / Cordis / React come from `$DSH_HOME/profiles/node_modules`. They are not duplicated under the plugin package.
 
@@ -165,7 +168,7 @@ See [SECURITY.md](./SECURITY.md) and [docs/browser-auth.md](./docs/browser-auth.
 
 ## Disclaimer
 
-- **Purpose**: this plugin only makes it convenient to use the DeepSeek web app from inside DSH (as an LLM source, or through the embedded web panel). It does not provide acceleration, rate-limit bypassing, or any capability DeepSeek has not opened up.
+- **Purpose**: starting with 1.0.44 this plugin only opens the official chat.deepseek.com web panel from inside DSH via the floating ball or sidebar (in-DSH chat was removed in 1.0.44). It does not provide acceleration, rate-limit bypassing, or any capability DeepSeek has not opened up.
 - **Account risk**: reusing a web login from a third-party client **may violate DeepSeek's Terms of Service** and can lead to rate limiting, suspension or a permanent ban. Use your own account and judge the risk yourself.
 - **Liability**: the authors accept **no responsibility** for any direct or indirect damage (including account loss, data loss or service interruption). The software is provided "as is", without warranty of any kind.
 - **Compliance**: follow your local laws and DeepSeek's terms. If you do not agree, do not install or use this plugin.
