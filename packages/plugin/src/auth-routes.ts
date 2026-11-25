@@ -24,9 +24,17 @@ export const WEBPANEL_TOKEN_PATH = '/plugins/dsh-deepseek-web/webpanel/token'
 export const AUTH_IMPORT_PATH = '/plugins/dsh-deepseek-web/auth/import'
 
 export interface PluginWebServer {
+  /**
+   * `auth` is understood by DSH >=0.2.3-alpha.x (WebServer policies); older
+   * kernels (<=0.2.2-rc.x) ignore unknown fields, so declaring it is downward
+   * compatible. These routes are protected by hostRejection() +
+   * trustedPluginRequest() in the handler, hence 'anonymous' here prevents the
+   * new kernel's default `required` policy from rejecting token seeding.
+   */
   register(route: {
     kind: 'exact' | 'prefix'
     path: string
+    auth?: 'anonymous' | 'required' | 'deny'
     handler: (req: IncomingMessage, res: ServerResponse) => void | Promise<void>
   }): () => void
 }
@@ -45,23 +53,45 @@ function forbidden(res: ServerResponse): void {
 
 /** Minimal shape of DSH's Host `connection` service (implementation-level API). */
 export interface HostConnection {
-  requestRejection(req: IncomingMessage): 401 | 403 | undefined
+  /** 0.2.2-rc.x and earlier: Host/Origin fence gate. */
+  requestRejection?(req: IncomingMessage): 401 | 403 | undefined
+  /**
+   * 0.2.3-alpha.x and later: requestRejection was removed; WebServer owns the
+   * route fence. `admit()` also performs credential verification, so plugins
+   * whose routes declare `auth: 'anonymous'` must NOT call it here (that would
+   * reject the webview guest, which carries no DSH API Cookie). Its presence
+   * only proves the new kernel is running.
+   */
+  admit?(req: IncomingMessage): unknown
 }
 
 /**
- * Exact webServer.register() routes bypass DSH's /api admission fence, so each
- * handler must ask the Host Connection service for the same decision itself.
- * Fail closed: a missing or broken gate is never interpreted as "allow".
+ * Ask the Host Connection service for its admission decision, compatible with
+ * both kernel generations:
+ * - old kernel (<=0.2.2-rc.x): call requestRejection() and honour its status.
+ * - new kernel (>=0.2.3-alpha.x): requestRejection was removed in favour of
+ *   WebServer `auth` policies. Routes here declare `auth: 'anonymous'`, which
+ *   already runs the active Connection source check in the kernel; the plugin's
+ *   own trustedPluginRequest() is the second same-origin layer. Returning
+ *   undefined here defers to those two layers instead of double-verifying
+ *   credentials (admit() would 401 the token-seeding webview request).
+ *
+ * Fail closed only when neither generation's API is present: an unknown kernel
+ * must never be treated as "allow".
  */
 export function hostRejection(req: IncomingMessage, connection: HostConnection | undefined): number | undefined {
   if (connection === undefined || connection === null) return 503
   const gate = connection.requestRejection
-  if (typeof gate !== 'function') return 503
-  try {
-    return gate.call(connection, req) ?? undefined
-  } catch {
-    return 503
+  if (typeof gate === 'function') {
+    try {
+      return gate.call(connection, req) ?? undefined
+    } catch {
+      return 503
+    }
   }
+  // New kernel: anonymous route + kernel source fence + trustedPluginRequest.
+  if (typeof connection.admit === 'function') return undefined
+  return 503
 }
 
 async function readBody(req: IncomingMessage, limit = 4096): Promise<string> {
@@ -105,11 +135,13 @@ export function registerAuthRoutes(
   const disposers = [
     webServer.register({
       kind: 'exact',
+      auth: 'anonymous',
       path: AUTH_STATUS_PATH,
       handler: handler('GET', async (_req, res) => write(res, 200, await service.status())),
     }),
     webServer.register({
       kind: 'exact',
+      auth: 'anonymous',
       path: AUTH_LOGIN_PATH,
       handler: handler('POST', async (req, res) => {
         const raw = await readBody(req)
@@ -120,6 +152,7 @@ export function registerAuthRoutes(
     }),
     webServer.register({
       kind: 'exact',
+      auth: 'anonymous',
       path: AUTH_IMPORT_PATH,
       handler: handler('POST', async (req, res) => {
         const raw = await readBody(req)
@@ -138,6 +171,7 @@ export function registerAuthRoutes(
     }),
     webServer.register({
       kind: 'exact',
+      auth: 'anonymous',
       path: AUTH_CANCEL_PATH,
       handler: handler('POST', async (req, res) => {
         await readBody(req)
@@ -147,6 +181,7 @@ export function registerAuthRoutes(
     }),
     webServer.register({
       kind: 'exact',
+      auth: 'anonymous',
       path: AUTH_LOGOUT_PATH,
       handler: handler('POST', async (req, res) => {
         const raw = await readBody(req)
@@ -157,6 +192,7 @@ export function registerAuthRoutes(
     }),
     webServer.register({
       kind: 'exact',
+      auth: 'anonymous',
       path: ACCOUNT_PATH,
       handler: handler('GET', async (_req, res) => {
         const status = await service.status()
@@ -165,11 +201,13 @@ export function registerAuthRoutes(
     }),
     webServer.register({
       kind: 'exact',
+      auth: 'anonymous',
       path: DOCTOR_PATH,
       handler: handler('GET', async (_req, res) => write(res, 200, await service.doctor())),
     }),
     webServer.register({
       kind: 'exact',
+      auth: 'anonymous',
       path: WEBPANEL_TOKEN_PATH,
       handler: handler('GET', async (_req, res) => {
         const token = await service.resolveToken()

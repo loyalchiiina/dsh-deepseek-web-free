@@ -1,7 +1,7 @@
 {
   "name": "dsh-deepseek-web-free",
   "description": "仅保留 DSH 内悬浮球与侧边栏打开官方 chat.deepseek.com 网页面板；1.0.44 起已移除 DSH 内直接对话功能。⚠️ 作者已实测账号被禁言，请勿再通过本插件复用网页登录态发起对话（1.0.44 起已移除）。使用后果由使用者自行承担，作者与本项目不承担任何责任。 Only the floating ball and sidebar that open the official chat.deepseek.com web panel remain; in-DSH chat was removed in 1.0.44. WARNING: a real account ban was observed; do not reuse the web session to start chats through this plugin (removed in 1.0.44). Use is at your own risk; the author and this project accept no responsibility.",
-  "version": "1.0.44",
+  "version": "1.0.45",
   "keywords": [
     "dsh",
     "dsh-plugin",

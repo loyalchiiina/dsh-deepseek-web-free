@@ -1,6 +1,14 @@
 > ⚠️ **停用公告（2026-11-17）**：2026-11-17 作者实测账号因违反用户使用规范被禁言至 2026-11-20 16:21；1.0.44 起已删除在 DSH 中直接选 DeepSeek Web 模型对话的功能，只保留悬浮球与侧边栏打开官方 chat.deepseek.com 网页面板；请勿再用旧版本复用网页登录态发起对话。
 > ⚠️ **Deprecation notice (2026-11-17)**: On 2026-11-17 the author's own test account was muted until 16:21 on 2026-11-20 for violating the user terms; starting with 1.0.44 the ability to chat by selecting a DeepSeek Web model directly inside DSH has been removed, leaving only the floating ball and sidebar shortcuts that open the official chat.deepseek.com web panel; do not reuse an old version to start chats with a web login session.
 
+## 1.0.45 (2026-11-25) — 兼容官方端 0.2.3-alpha.2 内核，消除反复登录
+
+- 根因：官方 0.2.3-alpha.2 内核在 `Connection` 上移除了 `requestRejection()`，改由 WebServer `auth` 策略（默认 `required`）接管准入；1.0.43 引入的 `hostRejection()` 只认旧 API，在新内核上一律 503，且 8 条 `webServer.register` 未声明 `auth` 被内核前置 401，导致 `/webpanel/token`（种回 token）与 `/auth/import`（反向同步）双双失效。网页 guest 分区又是内存态（每次启动随机 `dsh-sidebar-browser-<uuid>`、无 persist 前缀），凭据存得住却取不出，表现为每次重开面板都要重新登录。NEXT 端内核 0.2.2-rc.5 仍保留 `requestRejection`，故无此问题。
+- `hostRejection()` 双内核兼容：有 `requestRejection()` 则照旧调用（老内核语义不变）；无该方法但检测到 `admit()`（0.2.3+ 标志）则委托给 WebServer 的 anonymous 策略 + 插件自身同源校验，不重复做凭据校验（`admit()` 含凭据校验，会 401 掉没有 DSH Cookie 的 webview 种 token 请求）；两者都没有才 503 fail-closed。
+- 8 条宿主 HTTP 路由（auth/status、auth/login、auth/import、auth/cancel、auth/logout、account、doctor、webpanel/token）显式声明 `auth: 'anonymous'`；老内核忽略未知字段，向下兼容 0.2.2-rc.x。内核侧仍执行 Connection source check，插件侧仍执行 `trustedPluginRequest()`，两层同源防护未减弱。
+- 仅改宿主端 `packages/plugin/src/auth-routes.ts`（render/客户端 bundle 零改动）；官方端实体安装与 NEXT 端 link 安装加载同一份源码后达到相同的免反复登录效果。
+- 生效方式：宿主端 lib 改动，需彻底退出对应 DSH 客户端再启动（不是 Ctrl+R）。
+
 ## 1.0.44 (2026-11-17) — 移除 DSH 内对话功能，仅保留网页面板
 
 - 删除 `ctx.llm.registerConfigurableProviders` / `ctx.llm.registerAdapter` / `DeepSeekWebAdapter` / provider 模型注册，DSH 内不再出现可选 DeepSeek Web 模型。

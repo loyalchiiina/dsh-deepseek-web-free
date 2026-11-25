@@ -2,9 +2,9 @@
 
 # dsh-deepseek-web-free
 
-> **功能描述**：仅保留 DSH 内悬浮球与侧边栏打开官方 chat.deepseek.com 网页面板；1.0.44 起已移除 DSH 内直接对话功能。适配 DSH 内核 0.2.2-rc.1。
+> **功能描述**：仅保留 DSH 内悬浮球与侧边栏打开官方 chat.deepseek.com 网页面板；1.0.44 起已移除 DSH 内直接对话功能。适配 DSH 内核 0.2.2-rc.x 与 0.2.3-alpha.x（1.0.45 起双内核鉴权兼容，官方端网页面板不再反复登录）。
 >
-> **English**: Only the floating ball and sidebar that open the official chat.deepseek.com web panel remain; in-DSH chat was removed in 1.0.44. Adapts DSH kernel 0.2.2-rc.1.
+> **English**: Only the floating ball and sidebar that open the official chat.deepseek.com web panel remain; in-DSH chat was removed in 1.0.44. Adapts DSH kernels 0.2.2-rc.x and 0.2.3-alpha.x (dual-kernel auth compatibility since 1.0.45; no repeated login in the official desktop panel).
 
 
 **仅保留 DSH 悬浮球与侧边栏打开官方 chat.deepseek.com 网页面板 —— `y-wi/dsh-deepseek-web` 的 fork**
@@ -21,9 +21,9 @@
 请严格遵循相关使用政策，禁止将此项目用于反代等破坏系统正常运行的行为，仅限个人学习使用
 </h3>
 > [!CAUTION]
-> **停用公告（2026-11-17，中文）**：2026-11-17 作者实测账号因违反用户使用规范被禁言至 2026-11-20 16:21。1.0.44 起已删除在 DSH 中直接选 DeepSeek Web 模型对话的功能，只保留悬浮球与侧边栏打开官方 chat.deepseek.com 网页面板。请勿再用旧版本复用网页登录态发起对话。本插件不加速也不绕过任何风控，使用后果由使用者自行承担，作者与本项目不承担任何责任。适配 DSH 内核 0.2.2-rc.1。
+> **停用公告（2026-11-17，中文）**：2026-11-17 作者实测账号因违反用户使用规范被禁言至 2026-11-20 16:21。1.0.44 起已删除在 DSH 中直接选 DeepSeek Web 模型对话的功能，只保留悬浮球与侧边栏打开官方 chat.deepseek.com 网页面板。请勿再用旧版本复用网页登录态发起对话。本插件不加速也不绕过任何风控，使用后果由使用者自行承担，作者与本项目不承担任何责任。适配 DSH 内核 0.2.2-rc.x 与 0.2.3-alpha.x（1.0.45 起双内核鉴权兼容，官方端网页面板不再反复登录）。
 >
-> **Deprecation notice (2026-11-17, English)**: on 2026-11-17 the author observed a real account ban for violating the usage policy, muted until 2026-11-20 16:21. Starting with 1.0.44, selecting DeepSeek Web as a model for in-DSH chat has been removed; only the floating ball and sidebar that open the official chat.deepseek.com web panel remain. Do not use older versions to reuse a web login session to start chats. This plugin neither accelerates nor bypasses any risk control; use is at your own risk, and the author and this project accept no responsibility. Adapts DSH kernel 0.2.2-rc.1.
+> **Deprecation notice (2026-11-17, English)**: on 2026-11-17 the author observed a real account ban for violating the usage policy, muted until 2026-11-20 16:21. Starting with 1.0.44, selecting DeepSeek Web as a model for in-DSH chat has been removed; only the floating ball and sidebar that open the official chat.deepseek.com web panel remain. Do not use older versions to reuse a web login session to start chats. This plugin neither accelerates nor bypasses any risk control; use is at your own risk, and the author and this project accept no responsibility. Adapts DSH kernels 0.2.2-rc.x and 0.2.3-alpha.x (dual-kernel auth compatibility since 1.0.45; no repeated login in the official desktop panel).
 
 
 </div>

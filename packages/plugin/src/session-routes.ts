@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { pluginResponseHeaders, redactSensitiveText, trustedPluginRequest } from '@dsh-deepseek-web/compat'
-import { hostRejection } from './auth-routes.ts'
-import type { HostConnection, PluginWebServer } from './auth-routes.ts'
+import { hostRejection, type HostConnection } from './auth-routes.ts'
+import type { PluginWebServer } from './auth-routes.ts'
 import type { RemoteSessionService } from './remote-session-service.ts'
 import { PluginSessionError } from './dsh-session.ts'
 import { ERROR_CODES } from './errors.ts'
@@ -183,8 +183,8 @@ export function registerSessionRoutes(
   })
 
   const disposers = [
-    webServer.register({ kind: 'prefix', path: SESSIONS_PATH, handler: sessions }),
-    webServer.register({ kind: 'exact', path: FORK_PATH, handler: fork }),
+    webServer.register({ kind: 'prefix', auth: 'anonymous', path: SESSIONS_PATH, handler: sessions }),
+    webServer.register({ kind: 'exact', auth: 'anonymous', path: FORK_PATH, handler: fork }),
   ]
   return () => {
     for (const dispose of disposers) dispose()
