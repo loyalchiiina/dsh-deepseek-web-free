@@ -20,10 +20,10 @@
 <h3>
 请严格遵循相关使用政策，禁止将此项目用于反代等破坏系统正常运行的行为，仅限个人学习使用
 </h3>
-> [!CAUTION]
-> **停用公告（2026-11-17，中文）**：2026-11-17 作者实测账号因违反用户使用规范被禁言至 2026-11-20 16:21。1.0.44 起已删除在 DSH 中直接选 DeepSeek Web 模型对话的功能，只保留悬浮球与侧边栏打开官方 chat.deepseek.com 网页面板。请勿再用旧版本复用网页登录态发起对话。本插件不加速也不绕过任何风控，使用后果由使用者自行承担，作者与本项目不承担任何责任。适配 DSH 内核 0.2.2-rc.x 与 0.2.3-alpha.x（1.0.45 起双内核鉴权兼容，官方端网页面板不再反复登录）。
+> [!NOTE]
+> **功能范围（中文）**：本插件只提供悬浮球与侧边栏，用于打开官方 chat.deepseek.com **网页面板**。在 DSH 中直接选 DeepSeek Web 模型对话的功能自 1.0.44 起已移除。适配 DSH 内核 0.2.2-rc.x 与 0.2.3-alpha.x（1.0.45 起双内核鉴权兼容，官方端网页面板不再反复登录）。
 >
-> **Deprecation notice (2026-11-17, English)**: on 2026-11-17 the author observed a real account ban for violating the usage policy, muted until 2026-11-20 16:21. Starting with 1.0.44, selecting DeepSeek Web as a model for in-DSH chat has been removed; only the floating ball and sidebar that open the official chat.deepseek.com web panel remain. Do not use older versions to reuse a web login session to start chats. This plugin neither accelerates nor bypasses any risk control; use is at your own risk, and the author and this project accept no responsibility. Adapts DSH kernels 0.2.2-rc.x and 0.2.3-alpha.x (dual-kernel auth compatibility since 1.0.45; no repeated login in the official desktop panel).
+> **Scope (English)**: This plugin only provides a floating ball and the sidebar that open the official chat.deepseek.com **web panel**. In-DSH chat with a DeepSeek Web model was removed in 1.0.44. Adapts DSH kernels 0.2.2-rc.x and 0.2.3-alpha.x (dual-kernel auth compatibility since 1.0.45; no repeated login in the official desktop panel).
 
 
 </div>
@@ -32,12 +32,10 @@
 
 本项目与 DeepSeek **无隶属或背书关系**。使用你自己的 DeepSeek 账号。插件不会绕过 CAPTCHA、WAF 或账号访问控制；日常登录直接在 DSH 网页面板内的官方 chat.deepseek.com 页面完成，交互式验证也由该页面承接（隔离浏览器登录仅作为 CLI / TUI 与 `/auth/login` 调用的备用通道保留）。
 
-> [!WARNING]
-> **免责声明（务必先读）**
+> [!NOTE]
+> **功能说明**
 >
-> 本插件**只用于在 DSH 侧栏 / 悬浮球里打开官方 DeepSeek 网页面板**：面板加载时会写入一个 localStorage 标记（`closeUnsafeEnvWarn`）关闭网页端「使用环境异常」这条前端提示，仅隐藏提示文案，不改变也不绕过账号校验、人机验证或风控判定。1.0.44 起已不再提供「把网页端当模型」「在 DSH 内直接对话」「图片识图」等能力；右键投送（选中文字复制到 DeepSeek 网页输入框）仍保留。
->
-> **账号风险已发生真实禁言案例**：2026-11-17 作者实测账号因违反用户使用规范被禁言至 2026-11-20 16:21。使用网页端登录态于第三方客户端可能违反 DeepSeek 服务条款，可能导致限流、冻结或封禁。**由此产生的任何后果由使用者自行承担，本项目与作者不承担任何责任**，也不提供任何形式的担保。请勿再用旧版本复用网页登录态发起对话；请自行评估风险后再决定是否使用网页面板。
+> 本插件**只用于在 DSH 侧栏 / 悬浮球里打开官方 DeepSeek 网页面板**：面板加载时会写入一个 localStorage 标记（`closeUnsafeEnvWarn`）关闭网页端「使用环境异常」这条前端提示，仅隐藏提示文案，不改变也不绕过账号校验、人机验证或风控判定。右键投送（选中文字复制到 DeepSeek 网页输入框）仍保留。
 >
 > 本项目与 DeepSeek 无隶属或背书关系，请遵守 DeepSeek 的服务条款与使用政策。
 
@@ -294,11 +292,9 @@ dsh plugin --profile web exec dsh-deepseek-web-free login --token-stdin
 - [上游项目](https://github.com/y-wi/dsh-deepseek-web)
 - [参考实现：agent2api](https://github.com/aimod-cc/agent2api)（本版「图片输入」的协议思路来源；本插件为独立实现，未复制其代码）
 
-## 免责声明
+## 功能说明
 
 - **用途**：本插件仅为方便用户在 DSH 内打开官方 DeepSeek 网页面板（仅面板，不再当模型、不再在 DSH 内对话），不提供任何 DeepSeek 官方未开放的加速、绕过或批量能力。
-- **账号风险**：已发生真实禁言案例（2026-11-17 作者实测账号因违反用户使用规范被禁言至 2026-11-20 16:21）。把网页端登录态用于第三方客户端可能违反 DeepSeek 服务条款，可能导致账号被限流、被冻结或封禁。请勿再用旧版本复用网页登录态发起对话；请使用你自己的账号并自行评估风险。
-- **责任**：作者与贡献者**不对任何直接或间接损失承担责任**（包括但不限于账号损失、数据丢失、服务中断）。软件按「现状」提供，不附带任何明示或暗示担保。
 - **合规**：请遵守所在地区法律法规与 DeepSeek 的服务条款；若你不同意上述条款，请勿安装或使用本插件。
 
 ## 许可证

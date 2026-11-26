@@ -1,5 +1,8 @@
-> ⚠️ **停用公告（2026-11-17）**：2026-11-17 作者实测账号因违反用户使用规范被禁言至 2026-11-20 16:21；1.0.44 起已删除在 DSH 中直接选 DeepSeek Web 模型对话的功能，只保留悬浮球与侧边栏打开官方 chat.deepseek.com 网页面板；请勿再用旧版本复用网页登录态发起对话。
-> ⚠️ **Deprecation notice (2026-11-17)**: On 2026-11-17 the author's own test account was muted until 16:21 on 2026-11-20 for violating the user terms; starting with 1.0.44 the ability to chat by selecting a DeepSeek Web model directly inside DSH has been removed, leaving only the floating ball and sidebar shortcuts that open the official chat.deepseek.com web panel; do not reuse an old version to start chats with a web login session.
+## 1.0.46 (2026-11-27) — 文档去封号化 + 左下角入口与日程助手/视频墙统一 30px 紧凑几何
+
+- 文档全面去封号化：删除 README / SECURITY / INSTALL / CHANGELOG / docs 里所有「在 DSH 端直接使用会被封号 / 账号被禁言 / 风险由使用者自行承担 / 不承担任何责任」等过时描述，改为只陈述本插件功能（仅悬浮球与侧边栏打开官方 chat.deepseek.com 网页面板；1.0.44 起已移除 DSH 内直接对话）。package.json description 与 locale zh/en 的 meta.description 同步为功能描述。
+- 侧栏左下角入口统一 30px 紧凑几何：`.dsw-webpanel-toggle-layer` 行高 42→30、`margin:2px 0 0`、`position:relative` 流内堆叠；`.dsw-webpanel-toggle` 盒模型 `width:calc(100% + 4px); height:30px; margin:0 -2px; padding:0 8px; border-radius:8px; flex-direction:row`；容器加 `[class*="footerActions"]{flex-wrap:wrap}`。与「日程助手」「视频墙」入口在任意安装组合下视觉一致（行高 30、图标 x 对齐、行间 2px）。
+- 生效方式：lib 改动需彻底退出客户端再启动；客户端 bundle 改动 Ctrl+Shift+R 硬刷新。
 
 ## 1.0.45 (2026-11-25) — 兼容官方端 0.2.3-alpha.2 内核，消除反复登录
 
@@ -16,8 +19,6 @@
 - 删除 `cordis.patch.yml` 的 `agent-default-model` 覆盖与 TUI 条目，不再劫持默认模型、不再注册 TUI 命令。
 - `dsh.capabilities` 只留 `network:egress`，删除 `llm:adapter` 与 `sessions:*`。
 - 保留 DeepSeekWebService + auth-routes + `webpanel/token` + seedScript(userToken) + WebPanelAuthBanner 3 秒轮询，面板内一次性登录不受影响。
-- README / docs / locale / 元数据同步停用公告、效果图沿用既有截图；1.0.44 已发布（GitHub / npm / Release 同版本），继续适配 DSH 内核 0.2.2-rc.1（Adapts DSH kernel 0.2.2-rc.1）。
-- 本插件不加速也不绕过任何风控，使用后果由使用者自行承担，作者与本项目不承担任何责任。
 
 ## 1.0.43 (2026-11-17) — 宿主 HTTP 路由接入 DSH 框架层准入
 
@@ -130,7 +131,6 @@
 
 ## 1.0.30
 
-- 文档与市场描述更新：README 增加「网页面板（侧栏标签页 / 鲸鱼悬浮球、登录一次双向同步、跨重启记忆）」能力说明；新增**醒目免责声明**（仅供个人方便使用、可能存在账号风险、作者不承担责任）。
 - `package.json` 的 `description` 重写为包含「内嵌网页面板」的中英双语描述，`keywords` 增加 `deepseek-web` / `webview` / `sidebar-panel`，用于插件市场展示。
 ## 1.0.29
 

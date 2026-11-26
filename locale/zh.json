@@ -2,6 +2,6 @@
   "name": "dsh-deepseek-web-free",
   "meta": {
     "title": "DeepSeek 网页面板",
-    "description": "仅通过悬浮球或侧边栏打开官方 chat.deepseek.com 网页面板；DSH 内直接对话功能已在 1.0.44 移除。⚠️ 作者已实测账号被禁言，请勿再通过本插件复用网页登录态发起对话（1.0.44 起已移除）。"
+    "description": "仅通过悬浮球或侧边栏打开官方 chat.deepseek.com 网页面板（在 DSH 中直接选 DeepSeek Web 模型对话的功能自 1.0.44 起已移除）。"
   }
 }

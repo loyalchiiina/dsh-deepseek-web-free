@@ -2,6 +2,6 @@
   "name": "dsh-deepseek-web-free",
   "meta": {
     "title": "DeepSeek Web Panel",
-    "description": "Only the floating ball and sidebar open the official chat.deepseek.com web panel; in-DSH chat was removed in 1.0.44. WARNING: a real account ban was observed; do not reuse the web session to start chats through this plugin (removed in 1.0.44)."
+    "description": "Open the official chat.deepseek.com web panel via a floating ball or the sidebar (in-DSH chat with a DeepSeek Web model was removed in 1.0.44)."
   }
 }
